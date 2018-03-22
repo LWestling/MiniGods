@@ -23,8 +23,9 @@ import static android.opengl.GLES31.glShaderSource;
  * Manage shaders
  */
 
-class ShaderManager {
+public class ShaderManager {
     private final static String SHADER_TAG = "shaderOutput";
+    public final static String SHADER_PATH_FORMAT = "shaders/%s.glsl";
 
     void bindShaders(int program, int vertex, int fragment) {
         GLES31.glAttachShader(program, vertex);
@@ -36,7 +37,7 @@ class ShaderManager {
         GLES31.glDetachShader(program, fragment);
     }
 
-    int createShader(int shaderType, InputStream stream) throws IOException {
+    public int createShader(int shaderType, InputStream stream) throws IOException {
         int shader = glCreateShader(shaderType);
 
         if (shader != 0) {

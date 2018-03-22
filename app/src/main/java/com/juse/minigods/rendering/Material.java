@@ -24,6 +24,7 @@ public class Material {
         this.renderPass = renderPass;
         this.vertexLocation = vertexLocation;
 
+        uniformLocations = new int[0];
         createOGLData();
     }
 
@@ -42,6 +43,18 @@ public class Material {
         uniformBuffers = buffers;
         uniformLocations = locations;
     }
+
+    /*
+    private void createUBO() {
+        ubo = new int[uniformBuffers.length];
+        GLES31.glGenBuffers(ubo.length, ubo, 0);
+
+        for (int i = 0; i < ubo.length; i++) {
+            GLES31.glBindBuffer(GLES31.GL_UNIFORM_BUFFER, ubo[i]);
+            GLES31.glBufferData(GLES31.GL_UNIFORM_BUFFER, uniformBuffers[i].capacity() * FLOAT_SIZE,
+                    uniformBuffers[i], GLES31.GL_DYNAMIC_DRAW); // does the hint do anything?
+        }
+    } */
 
     public void updateUniform(FloatBuffer buffer, int index) {
         uniformBuffers[index] = buffer;

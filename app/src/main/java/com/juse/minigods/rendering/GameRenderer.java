@@ -5,12 +5,14 @@ import android.opengl.GLES31;
 import android.opengl.GLSurfaceView;
 
 import com.juse.minigods.Utils.DataUtils;
+import com.juse.minigods.rendering.renderers.RendererInterface;
 import com.juse.minigods.reporting.CrashManager;
 
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -33,6 +35,10 @@ public class GameRenderer implements GLSurfaceView.Renderer {
     private CameraProjectionManager cameraProjectionManager;
     private Material testMaterial;
     private Vector3f test = new Vector3f(0.f, 0.f, 0.f);
+    private float test2 = 0;
+
+    // Renderers
+    private ArrayList<RendererInterface> renderers;
 
     private int vertexShader, fragmentShader, renderPass;
     // test data
@@ -52,6 +58,10 @@ public class GameRenderer implements GLSurfaceView.Renderer {
         this.assetManager = assetManager;
     }
 
+    public void setupRenderers(ArrayList<RendererInterface> interfaces) {
+        renderers = interfaces;
+    }
+
     public void onSurfaceCreated(GL10 gl10, EGLConfig eglConfig) {
         GLES31.glClearColor(0.95f, 0.05f, 0.05f, 0.95f);
         createShaders(assetManager);
@@ -61,6 +71,8 @@ public class GameRenderer implements GLSurfaceView.Renderer {
                 DataUtils.ToBuffer(new Matrix4f().translate(test)),
                 2);
         materialManager.addMaterial(testMaterial);
+
+        renderers.forEach(rendererInterface -> rendererInterface.setup(shaderManager, materialManager, assetManager));
     }
 
     public void onSurfaceChanged(GL10 gl10, int width, int height) {
@@ -74,8 +86,11 @@ public class GameRenderer implements GLSurfaceView.Renderer {
         CrashManager.HandleOpenGlErrors();
 
          // test
-        test.x += 0.001f;
-        testMaterial.updateUniform(DataUtils.ToBuffer(new Matrix4f().translate(test)), 0);
+        //test.x += 0.001f;
+        test2  += 0.006f;
+        testMaterial.updateUniform(DataUtils.ToBuffer(new Matrix4f().translate(test).rotate(test2, 0.f, 1.f, 0.f)), 0);
+
+        renderers.forEach(rendererInterface -> rendererInterface.render(shaderManager, materialManager));
     }
 
     private void createShaders(AssetManager assetManager) {
