@@ -32,7 +32,14 @@ public class CameraProjectionManager {
     }
 
     public void updateCamera(Vector3f cameraPos, Vector3f dir) {
-        camera = new Matrix4f().lookAt(cameraPos, dir, new Vector3f(0.f, 1.f, 0.f));
-        buffer = DataUtils.ToBuffer(projection.mul(camera));
+        Vector3f lookPoint = new Vector3f(cameraPos).add(dir);
+
+        camera.setLookAt(
+                cameraPos,
+                lookPoint,
+                new Vector3f(0.f, 1.f, 0.f)
+        );
+
+        buffer = DataUtils.ToBuffer(new Matrix4f(projection).mul(camera));
     }
 }

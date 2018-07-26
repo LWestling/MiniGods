@@ -47,7 +47,6 @@ public class Game {
         player.update(dt);
         obstacles.forEach(consumer -> consumer.update(dt, mapSpeed));
 
-
         if (Math.random() < 0.01f) // test
             spawnObstacleLine();
     }

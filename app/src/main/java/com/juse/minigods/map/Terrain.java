@@ -5,7 +5,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Created by LukasW on 2018-03-11.
- * A terrain
+ * A terrain, column by column since they will get deleted when the go past the screen.
  */
 
 public class Terrain {
@@ -14,6 +14,7 @@ public class Terrain {
     }
 
     private LinkedBlockingQueue<ArrayList<TerrainType>> columns;
+    private TerrainColumn renderColumn;
 
     public Terrain(int rows, int columns) {
         this.columns = new LinkedBlockingQueue<>();
@@ -31,18 +32,24 @@ public class Terrain {
             this.columns.add(column);
             column.clear();
         }
+
+        renderColumn = new TerrainColumn(rows);
     }
 
-    private int getColumnsSize() {
+    public int getColumnsSize() {
         return columns.size();
     }
 
-    private int getRows() {
+    public int getRows() {
         return columns.peek().size();
     }
 
-    private LinkedBlockingQueue<ArrayList<TerrainType>> getColumns() {
+    public LinkedBlockingQueue<ArrayList<TerrainType>> getColumns() {
         return columns;
+    }
+
+    public TerrainColumn getRenderColumn() {
+        return renderColumn;
     }
 
     public void reset() {

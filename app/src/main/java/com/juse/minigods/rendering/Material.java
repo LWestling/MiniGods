@@ -14,25 +14,28 @@ public class Material {
     private FloatBuffer floatBuffer;
     private int renderPass;
     private int vertexLocation;
+    private int vertexCount;
     private int vbo[], vao[];
 
     private FloatBuffer uniformBuffers[]; // change to one float buffer with all shiet in?
     private int uniformLocations[];
 
-    public Material(int renderPass, FloatBuffer floatBuffer, int vertexLocation) {
+    public Material(int renderPass, FloatBuffer floatBuffer, int vertexLocation, int vertexCount) {
         this.floatBuffer = floatBuffer;
         this.renderPass = renderPass;
         this.vertexLocation = vertexLocation;
+        this.vertexCount = vertexCount;
 
         uniformLocations = new int[0];
         createOGLData();
     }
 
     public Material(int renderPass, FloatBuffer floatBuffer, int vertexLocation,
-                    FloatBuffer uniformBuffer, int uniformLocation) {
+                    int vertexCount, FloatBuffer uniformBuffer, int uniformLocation) {
         this.floatBuffer = floatBuffer;
         this.renderPass = renderPass;
         this.vertexLocation = vertexLocation;
+        this.vertexCount = vertexCount;
 
         setUniforms(new FloatBuffer[] {uniformBuffer}, new int[] {uniformLocation});
         createOGLData();
@@ -98,7 +101,7 @@ public class Material {
     }
 
     public int getVertexCount() {
-        return 3; // todo
+        return vertexCount;
     }
 
     public int getVertexOffset() {

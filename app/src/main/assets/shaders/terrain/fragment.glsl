@@ -17,7 +17,7 @@ vec4 calcLight(vec3 color) {
 }
 
 void main() {
-    vec3 color = vec3(0.0, 0.0, 1.0);
+    vec3 color = vec3(0.0, 1.0, 1.0);
 
     finalColor = calcLight(color);
 }

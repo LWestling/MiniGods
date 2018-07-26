@@ -17,10 +17,14 @@ import java.util.ArrayList;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import static android.opengl.GLES31.GL_COLOR_BUFFER_BIT;
-import static android.opengl.GLES31.GL_DEPTH_BUFFER_BIT;
-import static android.opengl.GLES31.GL_FRAGMENT_SHADER;
-import static android.opengl.GLES31.GL_VERTEX_SHADER;
+import static android.opengl.GLES32.GL_COLOR_BUFFER_BIT;
+import static android.opengl.GLES32.GL_DEPTH_BUFFER_BIT;
+import static android.opengl.GLES32.GL_DONT_CARE;
+import static android.opengl.GLES32.GL_FRAGMENT_SHADER;
+import static android.opengl.GLES32.GL_VERTEX_SHADER;
+import static android.opengl.GLES32.glDebugMessageControl;
+import static com.juse.minigods.Utils.Constants.DEBUGGING;
+import static com.juse.minigods.Utils.Constants.SHOW_OGL_DEBUG;
 
 /**
  * Created by LukasW on 2018-03-08.
@@ -32,47 +36,52 @@ public class GameRenderer implements GLSurfaceView.Renderer {
     private ShaderManager shaderManager;
     private AssetManager assetManager;
     private MaterialManager materialManager;
-    private CameraProjectionManager cameraProjectionManager;
     private Material testMaterial;
-    private Vector3f test = new Vector3f(0.f, 0.f, 0.f);
+    private Vector3f test = new Vector3f(0.f, 0.f, -3.f);
     private float test2 = 0;
 
     // Renderers
-    private ArrayList<RendererInterface> renderers;
+    private ArrayList<RendererInterface> rendererList;
 
     private int vertexShader, fragmentShader, renderPass;
     // test data
     private Vector3f triangle[] = {
-            new Vector3f(-1.f, -1.f, 0.f),
-            new Vector3f(-1.f, 1.f, 0.f),
-            new Vector3f(1.f, -1.f, 0.f)
+            new Vector3f(-1.f, 0.f, -1.f),
+            new Vector3f(-1.f, 0.f, 1.f),
+            new Vector3f(1.f, 0.f, -1.f)
     };
 
     public GameRenderer(AssetManager assetManager) {
         super();
         shaderManager = new ShaderManager();
         materialManager = new MaterialManager();
-        cameraProjectionManager = new CameraProjectionManager();
-        cameraProjectionManager.updateCamera(new Vector3f(0, 0, 2.f),
-                new Vector3f(0.f, -0.33f, -1.f).normalize());
         this.assetManager = assetManager;
     }
 
-    public void setupRenderers(ArrayList<RendererInterface> interfaces) {
-        renderers = interfaces;
+    public void setupRendererList(ArrayList<RendererInterface> interfaces) {
+        rendererList = interfaces;
     }
 
     public void onSurfaceCreated(GL10 gl10, EGLConfig eglConfig) {
+        if (DEBUGGING) {
+            if (SHOW_OGL_DEBUG) {
+                glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE,
+                        0, DataUtils.newIntBuffer(0), true);
+
+              //  GLES32.glDebugMessageCallback(new OglDebugCallback()); wow NYI Cx
+            }
+        }
+
         GLES31.glClearColor(0.95f, 0.05f, 0.05f, 0.95f);
         createShaders(assetManager);
 
         renderPass = materialManager.createRenderPass(vertexShader, fragmentShader, shaderManager);
         testMaterial = new Material(renderPass, DataUtils.ToBuffer(triangle), 0,
-                DataUtils.ToBuffer(new Matrix4f().translate(test)),
+                3, DataUtils.ToBuffer(new Matrix4f().translate(test)),
                 2);
         materialManager.addMaterial(testMaterial);
 
-        renderers.forEach(rendererInterface -> rendererInterface.setup(shaderManager, materialManager, assetManager));
+        rendererList.forEach(rendererInterface -> rendererInterface.setup(shaderManager, materialManager, assetManager));
     }
 
     public void onSurfaceChanged(GL10 gl10, int width, int height) {
@@ -81,16 +90,15 @@ public class GameRenderer implements GLSurfaceView.Renderer {
 
     public void onDrawFrame(GL10 gl10) {
         GLES31.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        cameraProjectionManager.bindGraphicsData(1);
+
+        // 4 testing
+        test2 += 0.006f;
+        testMaterial.updateUniform(DataUtils.ToBuffer(new Matrix4f().translate(test)), 0);
+
         materialManager.render(renderPass);
+        rendererList.forEach(rendererInterface -> rendererInterface.render(shaderManager, materialManager));
+
         CrashManager.HandleOpenGlErrors();
-
-         // test
-        //test.x += 0.001f;
-        test2  += 0.006f;
-        testMaterial.updateUniform(DataUtils.ToBuffer(new Matrix4f().translate(test).rotate(test2, 0.f, 1.f, 0.f)), 0);
-
-        renderers.forEach(rendererInterface -> rendererInterface.render(shaderManager, materialManager));
     }
 
     private void createShaders(AssetManager assetManager) {

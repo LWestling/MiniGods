@@ -37,6 +37,10 @@ public class ShaderManager {
         GLES31.glDetachShader(program, fragment);
     }
 
+    void deleteShader(int shader) {
+        GLES31.glDeleteShader(shader);
+    }
+
     public int createShader(int shaderType, InputStream stream) throws IOException {
         int shader = glCreateShader(shaderType);
 

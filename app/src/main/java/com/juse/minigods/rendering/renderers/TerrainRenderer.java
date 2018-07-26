@@ -4,6 +4,7 @@ import android.content.res.AssetManager;
 
 import com.juse.minigods.Utils.DataUtils;
 import com.juse.minigods.map.Terrain;
+import com.juse.minigods.map.TerrainColumn;
 import com.juse.minigods.rendering.Material;
 import com.juse.minigods.rendering.MaterialManager;
 import com.juse.minigods.rendering.ShaderManager;
@@ -28,13 +29,13 @@ public class TerrainRenderer implements RendererInterface {
 
     // replace with better later for some displacement
     public final static Vector3f SQUARE[] = {
-            new Vector3f(-1.f, 1.f, 0.f),
-            new Vector3f(1.f, -1.f, 0.f),
-            new Vector3f(-1.f, -1.f, 0.f),
+            new Vector3f(0.f, 0.f, 0.f),
+            new Vector3f(1.f, 0.f, 0.f),
+            new Vector3f(1.f, 0.f, 1.f),
 
-            new Vector3f(-1.f, 1.f, 0.f),
-            new Vector3f(1.f, 1.f, 0.f),
-            new Vector3f(1.f, -1.f, 0.f),
+            new Vector3f(0.f, 0.f, 0.f),
+            new Vector3f(0.f, 0.f, 1.f),
+            new Vector3f(1.f, 0.f, 1.f),
     };
 
     private int renderPass;
@@ -52,13 +53,22 @@ public class TerrainRenderer implements RendererInterface {
                     assetManager.open(String.format(ShaderManager.SHADER_PATH_FORMAT, FS)));
         } catch (IOException e) {
             e.printStackTrace();
-            CrashManager.ReportCrash(CrashManager.CrashType.GRAPHICS, "Error loading" +
-                    " vs / fs in terrain renderer", e);
+            CrashManager.ReportCrash(CrashManager.CrashType.GRAPHICS, "Error loading: " +
+                    "vs / fs in terrain renderer", e);
             return;
         }
 
         renderPass = materialManager.createRenderPass(vs, fs, shaderManager);
-        Material terrainMaterial = new Material(renderPass, DataUtils.ToBuffer(SQUARE), 0);
+
+        TerrainColumn column = terrain.getRenderColumn();
+        Vector3f[] vertices = (Vector3f[]) column.getColumnVertices().toArray();
+        Integer[] integers = (Integer[]) column.getColumnIndicies().toArray();
+
+        for (int i = 0; i < terrain.getColumnsSize(); i++) {
+            Material terrainColumn = new Material(
+                    renderPass, DataUtils.ToBuffer(vertices),;
+        }
+
         materialManager.addMaterial(terrainMaterial);
     }
 

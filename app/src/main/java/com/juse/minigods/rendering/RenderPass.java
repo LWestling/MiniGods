@@ -18,6 +18,10 @@ public class RenderPass {
         program = glCreateProgram();
         manager.bindShaders(program, vertexShader, fragmentShader);
         glLinkProgram(program);
+
+        manager.unbindShaders(program, vertexShader, fragmentShader);
+        manager.deleteShader(vertexShader);
+        manager.deleteShader(fragmentShader);
     }
 
     public int getVertexShader() {
