@@ -27,6 +27,7 @@ public class Game {
         player = new Player(START_POS);
         obstacles = new ArrayList<>();
         gameTimer = new GameTimer();
+        terrain = new Terrain(10, 10); // test numbers
     }
 
     // This starts a new game session, reset player and such

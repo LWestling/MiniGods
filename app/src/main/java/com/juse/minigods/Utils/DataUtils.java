@@ -30,6 +30,27 @@ public class DataUtils {
         return buffer;
     }
 
+    public static IntBuffer ToBuffer(int arr[]) {
+        IntBuffer buffer = ByteBuffer.allocateDirect(arr.length * Integer.BYTES)
+                .order(ByteOrder.nativeOrder())
+                .asIntBuffer();
+
+        buffer.put(arr);
+        buffer.flip();
+
+        return buffer;
+    }
+
+    // Fucking java
+    public static IntBuffer ToBuffer(Integer arr[]) {
+        int intArr[] = new int[arr.length];
+        for (int i = 0; i < arr.length; i++) {
+            intArr[i] = arr[i];
+        }
+
+        return ToBuffer(intArr);
+    }
+
     public static FloatBuffer ToBuffer(Matrix4f mat) {
         FloatBuffer buffer = ByteBuffer.allocateDirect(16 * Float.BYTES) // 4x4 matrix
                 .order(ByteOrder.nativeOrder())

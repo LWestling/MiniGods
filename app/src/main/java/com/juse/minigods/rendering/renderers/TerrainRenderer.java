@@ -5,14 +5,17 @@ import android.content.res.AssetManager;
 import com.juse.minigods.Utils.DataUtils;
 import com.juse.minigods.map.Terrain;
 import com.juse.minigods.map.TerrainColumn;
-import com.juse.minigods.rendering.Material;
+import com.juse.minigods.rendering.Material.Material;
+import com.juse.minigods.rendering.MaterialBuilder;
 import com.juse.minigods.rendering.MaterialManager;
 import com.juse.minigods.rendering.ShaderManager;
 import com.juse.minigods.reporting.CrashManager;
 
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 import java.io.IOException;
+import java.nio.FloatBuffer;
 
 import static android.opengl.GLES20.GL_FRAGMENT_SHADER;
 import static android.opengl.GLES20.GL_VERTEX_SHADER;
@@ -23,21 +26,9 @@ import static android.opengl.GLES20.GL_VERTEX_SHADER;
  */
 
 public class TerrainRenderer implements RendererInterface {
+    private final static String VS = "terrain/vertex", FS = "terrain/fragment";
+
     private Terrain terrain;
-    public final static float WIDTH = 2.5f, HEIGHT = 2.5f;
-    public final static String VS = "terrain/vertex", FS = "terrain/fragment";
-
-    // replace with better later for some displacement
-    public final static Vector3f SQUARE[] = {
-            new Vector3f(0.f, 0.f, 0.f),
-            new Vector3f(1.f, 0.f, 0.f),
-            new Vector3f(1.f, 0.f, 1.f),
-
-            new Vector3f(0.f, 0.f, 0.f),
-            new Vector3f(0.f, 0.f, 1.f),
-            new Vector3f(1.f, 0.f, 1.f),
-    };
-
     private int renderPass;
 
     public TerrainRenderer(Terrain terrain) {
@@ -61,15 +52,21 @@ public class TerrainRenderer implements RendererInterface {
         renderPass = materialManager.createRenderPass(vs, fs, shaderManager);
 
         TerrainColumn column = terrain.getRenderColumn();
-        Vector3f[] vertices = (Vector3f[]) column.getColumnVertices().toArray();
-        Integer[] integers = (Integer[]) column.getColumnIndicies().toArray();
+        Vector3f[] vertices = column.getColumnVertices().toArray(new Vector3f[] {});
+        Integer[] integers = column.getColumnIndices().toArray(new Integer[] {});
 
+        MaterialBuilder materialBuilder = new MaterialBuilder();
+        materialBuilder.addVertices(DataUtils.ToBuffer(vertices), 0, vertices.length, 0);
+        materialBuilder.addIndices(DataUtils.ToBuffer(integers), integers.length, 0);
         for (int i = 0; i < terrain.getColumnsSize(); i++) {
-            Material terrainColumn = new Material(
-                    renderPass, DataUtils.ToBuffer(vertices),;
-        }
+            // translation uniform
+            materialBuilder.addUniforms(
+                    (new FloatBuffer[] {DataUtils.ToBuffer(new Matrix4f().translate(terrain.getColumnWidth() * i, 0.f, 0.f).scale(terrain.getColumnWidth(), 1.f, 1.f))}),
+                    (new int[] {2})
+            );
 
-        materialManager.addMaterial(terrainMaterial);
+            materialManager.addMaterial(new Material(materialBuilder));
+        }
     }
 
     public void render(ShaderManager shaderManager, MaterialManager materialManager) {

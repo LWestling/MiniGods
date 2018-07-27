@@ -3,10 +3,18 @@ package com.juse.minigods.rendering;
 import android.opengl.GLES31;
 import android.util.SparseArray;
 
+import com.juse.minigods.rendering.Material.Indices;
+import com.juse.minigods.rendering.Material.Material;
+import com.juse.minigods.rendering.Material.Uniforms;
+import com.juse.minigods.rendering.Material.Vertices;
+
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
 
+import static android.opengl.GLES20.GL_ELEMENT_ARRAY_BUFFER;
+import static android.opengl.GLES20.GL_TRIANGLES;
+import static android.opengl.GLES20.GL_UNSIGNED_INT;
 import static android.opengl.GLES31.glUseProgram;
 
 /**
@@ -51,15 +59,31 @@ public class MaterialManager {
     private void render(Material material) {
         cameraProjectionManager.bindGraphicsData(1);
 
-        for (int i = 0; i < material.getUniformLocations().length; i++) {
-            GLES31.glUniformMatrix4fv(material.getUniformLocations()[i], 1,
-                    false, material.getUniformBuffers()[i]);
+        // todo: change this to data oriented way.
+        Uniforms uniforms = material.getUniforms();
+        if (uniforms != null) {
+            for (int i = 0; i < uniforms.getUniformLocations().length; i++) {
+                GLES31.glUniformMatrix4fv(uniforms.getUniformLocations()[i], 1,
+                        false, uniforms.getUniformBuffers()[i]);
+            }
         }
 
-        for (int vao : material.getVAO()) { // always 1
-            GLES31.glBindVertexArray(vao);
-            GLES31.glDrawArrays(GLES31.GL_TRIANGLES, material.getVertexOffset(), material.getVertexCount());
-            GLES31.glBindVertexArray(0);
+        Vertices vertices = material.getVertices();
+        Indices indices = material.getIndices();
+        if (vertices != null) {
+            for (int vao : vertices.getVao()) { // always 1
+                GLES31.glBindVertexArray(vao);
+
+                if (indices != null) {
+                    GLES31.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices.getGlBufferLocation());
+                    GLES31.glDrawElements(GL_TRIANGLES, indices.getSize(), GL_UNSIGNED_INT, indices.getOffset());
+                    GLES31.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+                } else {
+                    GLES31.glDrawArrays(GLES31.GL_TRIANGLES, vertices.getVertexOffset(), vertices.getVertexCount());
+                }
+
+                GLES31.glBindVertexArray(0);
+            }
         }
     }
 

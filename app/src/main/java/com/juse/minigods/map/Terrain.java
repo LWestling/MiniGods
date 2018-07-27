@@ -40,6 +40,10 @@ public class Terrain {
         return columns.size();
     }
 
+    public float getColumnWidth() {
+        return 2.f;
+    }
+
     public int getRows() {
         return columns.peek().size();
     }

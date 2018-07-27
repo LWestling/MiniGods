@@ -5,10 +5,10 @@ import android.opengl.GLES31;
 import android.opengl.GLSurfaceView;
 
 import com.juse.minigods.Utils.DataUtils;
+import com.juse.minigods.rendering.Material.Material;
 import com.juse.minigods.rendering.renderers.RendererInterface;
 import com.juse.minigods.reporting.CrashManager;
 
-import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 import java.io.IOException;
@@ -75,11 +75,12 @@ public class GameRenderer implements GLSurfaceView.Renderer {
         GLES31.glClearColor(0.95f, 0.05f, 0.05f, 0.95f);
         createShaders(assetManager);
 
+        /*
         renderPass = materialManager.createRenderPass(vertexShader, fragmentShader, shaderManager);
         testMaterial = new Material(renderPass, DataUtils.ToBuffer(triangle), 0,
                 3, DataUtils.ToBuffer(new Matrix4f().translate(test)),
                 2);
-        materialManager.addMaterial(testMaterial);
+        materialManager.addMaterial(testMaterial); */
 
         rendererList.forEach(rendererInterface -> rendererInterface.setup(shaderManager, materialManager, assetManager));
     }
@@ -93,7 +94,7 @@ public class GameRenderer implements GLSurfaceView.Renderer {
 
         // 4 testing
         test2 += 0.006f;
-        testMaterial.updateUniform(DataUtils.ToBuffer(new Matrix4f().translate(test)), 0);
+        //testMaterial.getUniforms().updateUniform(DataUtils.ToBuffer(new Matrix4f().translate(test)), 0);
 
         materialManager.render(renderPass);
         rendererList.forEach(rendererInterface -> rendererInterface.render(shaderManager, materialManager));
