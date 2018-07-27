@@ -1,8 +1,4 @@
-package com.juse.minigods.rendering;
-
-import com.juse.minigods.rendering.Material.Indices;
-import com.juse.minigods.rendering.Material.Uniforms;
-import com.juse.minigods.rendering.Material.Vertices;
+package com.juse.minigods.rendering.Material;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -18,12 +14,13 @@ public class MaterialBuilder {
         indices = null;
     }
 
-    public void addVertices(FloatBuffer vertexBuffer, int vertexLocation, int vertexCount, int vertexOffset) {
-        vertices = new Vertices(vertexBuffer, vertexLocation, vertexCount, vertexOffset);
+    public void addVertices(FloatBuffer vertexBuffer, int vertexLocation,
+                            int vertexCount, int vertexOffset, int drawFlag) {
+        vertices = new Vertices(vertexBuffer, vertexLocation, vertexCount, vertexOffset, drawFlag);
     }
 
-    public void addUniforms(FloatBuffer uniformBuffers[], int uniformLocations[]) {
-        uniforms = new Uniforms(uniformBuffers, uniformLocations);
+    public void addUniforms(int uniformLocations[], FloatBuffer... uniformBuffers) {
+        uniforms = new Uniforms(uniformLocations, uniformBuffers);
     }
 
     public void addIndices(IntBuffer intBuffer, int size, int offset) {

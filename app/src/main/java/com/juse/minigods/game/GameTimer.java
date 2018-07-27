@@ -6,7 +6,7 @@ package com.juse.minigods.game;
  */
 
 public class GameTimer {
-    private float lastTime;
+    private long lastTime;
 
     public GameTimer() {
         lastTime = 0;
@@ -17,7 +17,7 @@ public class GameTimer {
     }
 
     public float calcDeltaTime() {
-        float dt = System.currentTimeMillis() - lastTime;
+        float dt = (System.currentTimeMillis() - lastTime) / 1000.f;
         resetTimer();
         return dt;
     }

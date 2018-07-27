@@ -14,15 +14,18 @@ public class Terrain {
     }
 
     private LinkedBlockingQueue<ArrayList<TerrainType>> columns;
-    private TerrainColumn renderColumn;
+    private TerrainColumn renderColumns[];
 
-    public Terrain(int rows, int columns) {
+    public Terrain(int rows, int columns, float startOffset) {
         this.columns = new LinkedBlockingQueue<>();
 
-        createColumns(rows, columns);
+        createColumns(rows, columns, startOffset);
     }
 
-    private void createColumns(int rows, int columns) {
+    private void createColumns(int rows, int columns, float startOffset) {
+        renderColumns = new TerrainColumn[columns];
+        TerrainColumn renderColumn = new TerrainColumn(rows, 0, startOffset, startOffset + columns * getColumnWidth());
+
         ArrayList<TerrainType> column = new ArrayList<>();
         for (int i = 0; i < columns; i++) {
             for (int j = 0; j < rows; j++) {
@@ -31,9 +34,16 @@ public class Terrain {
 
             this.columns.add(column);
             column.clear();
-        }
 
-        renderColumn = new TerrainColumn(rows);
+            renderColumn.setOffset(startOffset + i * getColumnWidth());
+            renderColumns[i] = new TerrainColumn(renderColumn);
+        }
+    }
+
+    public void update(float dt) {
+        for (TerrainColumn renderColumn : renderColumns) {
+            renderColumn.update(-dt); // test
+        }
     }
 
     public int getColumnsSize() {
@@ -44,6 +54,10 @@ public class Terrain {
         return 2.f;
     }
 
+    public float getColumnOffset(int index) {
+        return getColumnsSize() * index;
+    }
+
     public int getRows() {
         return columns.peek().size();
     }
@@ -52,10 +66,13 @@ public class Terrain {
         return columns;
     }
 
-    public TerrainColumn getRenderColumn() {
-        return renderColumn;
+    public TerrainColumn[] getRenderColumns() {
+        return renderColumns;
     }
 
-    public void reset() {
+    public void reset(float startOffset) {
+        for (int i = 0; i < renderColumns.length; i++) {
+            renderColumns[i].setOffset(i * getColumnWidth() + startOffset);
+        }
     }
 }

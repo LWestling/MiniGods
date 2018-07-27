@@ -14,7 +14,7 @@ import java.util.ArrayList;
 
 public class Game {
     private static final float SCORE_POWER = 3.f, SPEED_POWER = 1.25f,
-        SCORE_MUL = 0.001f, SPEED_MUL = 0.01f; // change with difficulty or something?
+        SCORE_MUL = 0.001f, SPEED_MUL = 0.01f, START_OFFSET = -10.f; // change with difficulty or something?
     private static final Vector3f START_POS = new Vector3f(0.f, 0.f, 0.f);
 
     private Terrain terrain;
@@ -27,14 +27,14 @@ public class Game {
         player = new Player(START_POS);
         obstacles = new ArrayList<>();
         gameTimer = new GameTimer();
-        terrain = new Terrain(10, 10); // test numbers
+        terrain = new Terrain(10, 10, START_OFFSET); // test numbers
     }
 
     // This starts a new game session, reset player and such
     public void startGameSession() {
         player.setPosition(START_POS);
         obstacles.clear();
-        terrain.reset();
+        terrain.reset(START_OFFSET);
 
         gameTimer.resetTimer();
         score = 0;
@@ -46,6 +46,7 @@ public class Game {
         score += Math.pow(dt, SCORE_POWER) * SCORE_MUL;
 
         player.update(dt);
+        terrain.update(dt);
         obstacles.forEach(consumer -> consumer.update(dt, mapSpeed));
 
         if (Math.random() < 0.01f) // test

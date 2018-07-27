@@ -97,6 +97,9 @@ public class GameRenderer implements GLSurfaceView.Renderer {
         //testMaterial.getUniforms().updateUniform(DataUtils.ToBuffer(new Matrix4f().translate(test)), 0);
 
         materialManager.render(renderPass);
+
+        // obvious bad multithreading
+        rendererList.forEach(rendererInterface -> rendererInterface.update(materialManager));
         rendererList.forEach(rendererInterface -> rendererInterface.render(shaderManager, materialManager));
 
         CrashManager.HandleOpenGlErrors();

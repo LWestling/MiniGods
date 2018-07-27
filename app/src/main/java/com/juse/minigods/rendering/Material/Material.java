@@ -1,7 +1,5 @@
 package com.juse.minigods.rendering.Material;
 
-import com.juse.minigods.rendering.MaterialBuilder;
-
 /**
  * Created by LukasW on 2018-03-08.
  * A material, it has a id to a render pass it will use and its data

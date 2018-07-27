@@ -52,7 +52,7 @@ public class MainActivity extends Activity {
             while (running) {
                 game.update();
             }
-        });
+        }).start();
     }
 
     private void setupGame() {

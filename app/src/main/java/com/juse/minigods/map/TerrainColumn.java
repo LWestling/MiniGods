@@ -4,13 +4,33 @@ import org.joml.Vector3f;
 
 import java.util.ArrayList;
 
-public class TerrainColumn {
+public class TerrainColumn implements Cloneable{
     private static final int TRIANGLE_SIZE = 3;
+    private float offset, minOffset, resetOffset;
     private ArrayList<Vector3f> columnVertices;
     private ArrayList<Integer> columnIndices;
 
-    TerrainColumn(int height) {
+    TerrainColumn(int height, float startOffset, float minOffset, float resetOffset) {
         generateTerrain(height);
+        this.offset = startOffset;
+        this.minOffset = minOffset;
+        this.resetOffset = resetOffset;
+    }
+
+    /**
+     * Copies what needs to be
+     * @param terrainColumn column to copy values from
+     */
+    TerrainColumn(TerrainColumn terrainColumn) {
+        offset = terrainColumn.offset;
+        minOffset = terrainColumn.minOffset;
+        resetOffset = terrainColumn.resetOffset;
+
+        columnVertices = new ArrayList<>();
+        for (Vector3f columnVertex : terrainColumn.columnVertices) {
+            columnVertices.add(new Vector3f(columnVertex));
+        }
+        columnIndices = terrainColumn.columnIndices;
     }
 
     private void generateTerrain(int height) {
@@ -40,5 +60,20 @@ public class TerrainColumn {
 
     public ArrayList<Integer> getColumnIndices() {
         return columnIndices;
+    }
+
+    public float getOffset() {
+        return offset;
+    }
+
+    public void setOffset(float offset) {
+        this.offset = offset;
+    }
+
+    public void update(float moveOffset) {
+        offset += moveOffset;
+
+        if (offset < minOffset)
+            offset = resetOffset;
     }
 }

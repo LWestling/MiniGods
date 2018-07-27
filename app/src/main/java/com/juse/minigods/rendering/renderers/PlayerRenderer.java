@@ -24,4 +24,8 @@ public class PlayerRenderer implements RendererInterface {
     public void render(ShaderManager shaderManager, MaterialManager materialManager) {
 
     }
+
+    public void update(MaterialManager materialManager) {
+
+    }
 }

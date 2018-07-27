@@ -10,7 +10,7 @@ public class Indices {
     private int glBuffer[];
     private int offset, size;
 
-    public Indices(IntBuffer intBuffer, int offset, int size) {
+    Indices(IntBuffer intBuffer, int offset, int size) {
         this.intBuffer = intBuffer;
         this.offset = offset;
         this.size = size;
@@ -23,7 +23,6 @@ public class Indices {
 
         GLES31.glGenBuffers(glBuffer.length, glBuffer, 0);
         GLES31.glBindBuffer(GLES31.GL_ELEMENT_ARRAY_BUFFER, glBuffer[0]);
-        GLES31.glEnable(glBuffer[0]);
         GLES31.glBufferData(GLES31.GL_ELEMENT_ARRAY_BUFFER, size * Integer.BYTES, intBuffer, GLES20.GL_STATIC_DRAW);
     }
 
