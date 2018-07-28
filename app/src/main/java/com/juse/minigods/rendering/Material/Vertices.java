@@ -5,17 +5,16 @@ import android.opengl.GLES31;
 import java.nio.FloatBuffer;
 
 public class Vertices {
-    private final static int FLOAT_SIZE = 4, VECTOR_SIZE = 3; // 4 bytes
-
-    private int vertexCount, vertexLocations[], stride[], offset[];
+    private int vertexCount, attributeSize[], vertexLocations[], stride[], offset[];
     private int drawFlag;
     private int vbo[], vao[];
 
     private FloatBuffer vertexBuffer;
 
-     Vertices(FloatBuffer vertexBuffer, int vertexCount, int drawFlag, int vertexLocations[], int stride[], int offset[]) {
+     Vertices(FloatBuffer vertexBuffer, int vertexCount, int drawFlag, int attributeSize[], int vertexLocations[], int stride[], int offset[]) {
         this.vertexBuffer = vertexBuffer;
         this.vertexCount = vertexCount;
+        this.attributeSize = attributeSize;
         this.vertexLocations = vertexLocations;
         this.stride = stride;
         this.offset = offset;
@@ -32,7 +31,7 @@ public class Vertices {
     public void updateData(FloatBuffer newData) {
         // no sync
         GLES31.glBindBuffer(GLES31.GL_ARRAY_BUFFER, vbo[0]);
-        GLES31.glBufferSubData(GLES31.GL_ARRAY_BUFFER, 0, vertexCount * FLOAT_SIZE * VECTOR_SIZE, newData);
+        GLES31.glBufferSubData(GLES31.GL_ARRAY_BUFFER, 0, vertexBuffer.capacity() * Float.BYTES, newData);
         GLES31.glBindBuffer(GLES31.GL_ARRAY_BUFFER, 0);
     }
 
@@ -41,7 +40,7 @@ public class Vertices {
 
         GLES31.glGenBuffers(vbo.length, vbo, 0);
         GLES31.glBindBuffer(GLES31.GL_ARRAY_BUFFER, vbo[0]);
-        GLES31.glBufferData(GLES31.GL_ARRAY_BUFFER, vertexCount * FLOAT_SIZE * VECTOR_SIZE, vertexBuffer, drawFlag);
+        GLES31.glBufferData(GLES31.GL_ARRAY_BUFFER, vertexBuffer.capacity() * Float.BYTES, vertexBuffer, drawFlag);
 
         createVAO();
     }
@@ -55,7 +54,7 @@ public class Vertices {
 
         for (int i = 0; i < vertexLocations.length; i++) {
             GLES31.glEnableVertexAttribArray(vertexLocations[i]); // uses currently bound vao
-            GLES31.glVertexAttribPointer(vertexLocations[i], VECTOR_SIZE, GLES31.GL_FLOAT, false, stride[i], offset[i]);
+            GLES31.glVertexAttribPointer(vertexLocations[i], attributeSize[i], GLES31.GL_FLOAT, false, stride[i], offset[i]);
         }
     }
 

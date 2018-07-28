@@ -1,6 +1,8 @@
 package com.juse.minigods.reporting;
 
 import android.opengl.GLES31;
+import android.opengl.GLUtils;
+
 import static android.opengl.GLES31.*;
 
 /**
@@ -28,7 +30,7 @@ public class CrashManager {
                 case GL_INVALID_FRAMEBUFFER_OPERATION:  msg="INVALID_FRAMEBUFFER_OPERATION";  break;
                 default: msg = "WTF";
             }
-            System.out.println(msg);
+            System.out.println(msg + " : " + GLUtils.getEGLErrorString(error));
             error = GLES31.glGetError();
         }
     }

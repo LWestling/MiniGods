@@ -104,7 +104,8 @@ public class ObjLoader {
             });
 
             builder.addVertices(DataUtils.ToBuffer(toVec3Array(vertexData)), vertexData.size(),
-                    GLES31.GL_STATIC_DRAW, new int[] {0, 1}, new int[] {Float.BYTES * 6, Float.BYTES * 6}, new int[] {0, Float.BYTES * 3});
+                    GLES31.GL_STATIC_DRAW, new int[] {3, 3}, new int[] {0, 1},
+                    new int[] {Float.BYTES * 6, Float.BYTES * 6}, new int[] {0, Float.BYTES * 3});
         } else {
             // if only vertices
             filteredFaceParts.forEach(facePart -> vertexData.add(vertices.get(facePart.vertexIndex)));
@@ -127,7 +128,7 @@ public class ObjLoader {
                 vertices.add(toVec3(split, 1));
                 break;
             case VERTEX_NORMAL:
-                normals.add(toVec3(split, 1));
+                normals.add(toVec3(split, 1).mul(-1));
                 break;
         }
     }

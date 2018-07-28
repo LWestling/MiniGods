@@ -14,7 +14,7 @@ import com.juse.minigods.reporting.CrashManager;
 import org.joml.Matrix4f;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static android.opengl.GLES20.GL_FRAGMENT_SHADER;
 import static android.opengl.GLES20.GL_VERTEX_SHADER;
@@ -26,10 +26,11 @@ import static android.opengl.GLES20.GL_VERTEX_SHADER;
 
 public class ObstacleRenderer implements RendererInterface {
     private final static String VS = "vertex", FS = "fragment";
-    private ArrayList<Obstacle> obstacles;
+    private ConcurrentLinkedQueue<Obstacle> obstacles;
     private int renderPass;
+    private Material tree;
 
-    public ObstacleRenderer(ArrayList<Obstacle> obstacles) {
+    public ObstacleRenderer(ConcurrentLinkedQueue<Obstacle> obstacles) {
         this.obstacles = obstacles;
     }
 
@@ -48,12 +49,17 @@ public class ObstacleRenderer implements RendererInterface {
 
         ObjLoader objLoader = new ObjLoader("tree/lowpolytree", ObjLoader.ModelType.Quads);
         MaterialBuilder builder = objLoader.load(assetManager);
-        builder.addUniforms(new int[] {3}, DataUtils.ToBuffer(new Matrix4f().translate(0.f, 0.f, 3.f).scale(5)));
-        materialManager.addMaterial(new Material(renderPass, builder));
+        builder.addUniforms(new int[] {3}, DataUtils.ToBuffer(new Matrix4f().translate(0.f, 0.f, 3.f)));
+
+        tree = new Material(renderPass, builder);
+        materialManager.addMaterial(tree);
     }
 
     public void render(ShaderManager shaderManager, MaterialManager materialManager) {
-        materialManager.render(renderPass, 3);
+        for (Obstacle obstacle : obstacles) {
+            tree.getUniforms().updateUniform(DataUtils.ToBuffer(new Matrix4f().translate(obstacle.getPosition())), 0);
+            materialManager.render(renderPass, 2);
+        }
     }
 
     public void update(MaterialManager materialManager) {

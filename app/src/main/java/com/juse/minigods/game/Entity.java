@@ -33,6 +33,6 @@ public class Entity {
     }
 
     public void update(float deltaTime) {
-        position.add(velocity.mul(deltaTime, new Vector3f())); // don't know if this is the joml way of doing this
+        position.add(new Vector3f(velocity).mul(deltaTime)); // don't know if this is the joml way of doing this
     }
 }

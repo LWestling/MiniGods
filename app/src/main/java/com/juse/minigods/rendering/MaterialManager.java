@@ -4,6 +4,7 @@ import android.opengl.GLES31;
 import android.util.SparseArray;
 
 import com.juse.minigods.game.Game;
+import com.juse.minigods.rendering.Material.ImageTexture;
 import com.juse.minigods.rendering.Material.Indices;
 import com.juse.minigods.rendering.Material.Material;
 import com.juse.minigods.rendering.Material.Uniforms;
@@ -13,8 +14,12 @@ import java.util.ArrayList;
 
 import static android.opengl.GLES20.GL_ELEMENT_ARRAY_BUFFER;
 import static android.opengl.GLES20.GL_LESS;
+import static android.opengl.GLES20.GL_TEXTURE0;
+import static android.opengl.GLES20.GL_TEXTURE_2D;
 import static android.opengl.GLES20.GL_TRIANGLES;
 import static android.opengl.GLES20.GL_UNSIGNED_INT;
+import static android.opengl.GLES20.glActiveTexture;
+import static android.opengl.GLES20.glBindTexture;
 import static android.opengl.GLES20.glDepthFunc;
 import static android.opengl.GLES20.glEnable;
 import static android.opengl.GLES31.glUseProgram;
@@ -58,7 +63,7 @@ public class MaterialManager {
         }
     }
 
-    public void render(Material material) {
+    private void render(Material material) {
         // todo: change this to data oriented way.
         Uniforms uniforms = material.getUniforms();
         if (uniforms != null) {
@@ -67,9 +72,17 @@ public class MaterialManager {
 
         Vertices vertices = material.getVertices();
         Indices indices = material.getIndices();
+        ImageTexture imageTexture = material.getImageTexture();
+
+        // pretty awful code, opt
         if (vertices != null) {
             for (int vao : vertices.getVao()) { // always 1
                 GLES31.glBindVertexArray(vao);
+
+                if (imageTexture != null) {
+                    glActiveTexture(GL_TEXTURE0);
+                    glBindTexture(GL_TEXTURE_2D, imageTexture.getTextureId());
+                }
 
                 if (indices != null) {
                     GLES31.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices.getGlBufferLocation());
@@ -84,7 +97,7 @@ public class MaterialManager {
         }
     }
 
-    public void uniformMatrices(Uniforms uniforms) {
+    private void uniformMatrices(Uniforms uniforms) {
         for (int i = 0; i < uniforms.getUniformLocations().length; i++) {
             GLES31.glUniformMatrix4fv(uniforms.getUniformLocations()[i], 1,
                     false, uniforms.getUniformBuffers()[i]);

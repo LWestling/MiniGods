@@ -1,6 +1,7 @@
 package com.juse.minigods;
 
 import android.app.Activity;
+import android.graphics.BitmapFactory;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.view.MotionEvent;
@@ -11,8 +12,8 @@ import com.juse.minigods.rendering.renderers.ObstacleRenderer;
 import com.juse.minigods.rendering.renderers.PlayerRenderer;
 import com.juse.minigods.rendering.renderers.RendererInterface;
 import com.juse.minigods.rendering.renderers.TerrainRenderer;
+import com.juse.minigods.reporting.CrashManager;
 
-import org.joml.Matrix3f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -48,6 +49,11 @@ public class MainActivity extends Activity {
             game.startGameSession();
             while (running) {
                 game.update();
+                try {
+                    Thread.sleep(25);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }).start();
     }
@@ -60,7 +66,11 @@ public class MainActivity extends Activity {
         ArrayList<RendererInterface> rendererList = new ArrayList<>();
         rendererList.add(new PlayerRenderer(game.getPlayer()));
         rendererList.add(new ObstacleRenderer(game.getObstacles()));
-        rendererList.add(new TerrainRenderer(game.getTerrain()));
+        try {
+            rendererList.add(new TerrainRenderer(game.getTerrain(), BitmapFactory.decodeStream(getAssets().open("textures/grass.png"))));
+        } catch (Exception e) {
+            CrashManager.ReportCrash(CrashManager.CrashType.IO, "Not Found", e);
+        }
 
         gameRenderer = new GameRenderer(getAssets());
         gameRenderer.setupRendererList(rendererList);
@@ -76,17 +86,20 @@ public class MainActivity extends Activity {
 
         switch (e.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                lastPos = new Vector2f(x, y);
+                game.pressDown(x, y);
+                // lastPos = new Vector2f(x, y);
                 break;
             case MotionEvent.ACTION_MOVE:
+                /*
                 lookAlong.add(new Vector2f(x, y).sub(lastPos).mul(0.004f));
 
                 Matrix3f lookRotation = new Matrix3f().rotationXYZ(-lookAlong.y(), -lookAlong.x(), 0.f);
                 game.updateCamera(Game.CAMERA_START_POS, new Vector3f(lookDirection).mul(lookRotation));
 
-                lastPos = new Vector2f(x, y);
+                lastPos = new Vector2f(x, y); */
                 break;
             case MotionEvent.ACTION_UP:
+                game.pressUp(x, y);
                 // MaterialManager.updateCamera(new Vector3f(0.f, 0.1f, 3.f), new Vector3f(0.f, -0.33f, -1.f).normalize());
                 break;
         }

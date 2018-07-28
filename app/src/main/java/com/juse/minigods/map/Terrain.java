@@ -26,16 +26,14 @@ public class Terrain {
         renderColumns = new TerrainColumn[columns];
         TerrainColumn renderColumn = new TerrainColumn(rows, 0, startOffset, startOffset + columns * getColumnWidth());
 
-        ArrayList<TerrainType> column = new ArrayList<>();
         for (int i = 0; i < columns; i++) {
+            ArrayList<TerrainType> column = new ArrayList<>();
             for (int j = 0; j < rows; j++) {
                 column.add(Math.random() < 0.5f ? TerrainType.GRASS : TerrainType.WATER);
             }
-
             this.columns.add(column);
-            column.clear();
 
-            renderColumn.setOffset(startOffset + i * getColumnWidth());
+            renderColumn.setOffset(1.f + startOffset + i * getColumnWidth());
             renderColumns[i] = new TerrainColumn(renderColumn);
         }
     }

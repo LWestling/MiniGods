@@ -24,14 +24,6 @@ public class RenderPass {
         manager.deleteShader(fragmentShader);
     }
 
-    public int getVertexShader() {
-        return vertexShader;
-    }
-
-    public int getFragmentShader() {
-        return fragmentShader;
-    }
-
     public int getProgram() {
         return program;
     }

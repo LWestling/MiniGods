@@ -11,6 +11,7 @@ public class Material {
     private Uniforms uniforms; // Instead of material class just use these to make a more data oriented approach. Something to think about.
     private Vertices vertices;
     private Indices indices;
+    private ImageTexture imageTexture;
 
     public Material(int renderPass, MaterialBuilder materialBuilder) {
         this.renderPass = renderPass;
@@ -18,6 +19,7 @@ public class Material {
         vertices = materialBuilder.getVertices();
         uniforms = materialBuilder.getUniforms();
         indices = materialBuilder.getIndices();
+        imageTexture = materialBuilder.getImageTexture();
     }
 
     /*
@@ -46,5 +48,9 @@ public class Material {
 
     public Indices getIndices() {
         return indices;
+    }
+
+    public ImageTexture getImageTexture() {
+        return imageTexture;
     }
 }

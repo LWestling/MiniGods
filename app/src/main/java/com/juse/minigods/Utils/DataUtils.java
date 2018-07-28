@@ -30,6 +30,17 @@ public class DataUtils {
         return buffer;
     }
 
+    public static FloatBuffer ToBuffer(float arr[]) {
+        FloatBuffer buffer = ByteBuffer.allocateDirect(arr.length * Float.BYTES)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
+
+        buffer.put(arr);
+
+        buffer.flip();
+        return buffer;
+    }
+
     public static IntBuffer ToBuffer(int arr[]) {
         IntBuffer buffer = ByteBuffer.allocateDirect(arr.length * Integer.BYTES)
                 .order(ByteOrder.nativeOrder())

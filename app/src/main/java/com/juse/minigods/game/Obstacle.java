@@ -8,12 +8,23 @@ import org.joml.Vector3f;
  */
 
 public class Obstacle extends Entity {
+    private boolean isOffMap;
+
     public Obstacle(Vector3f startPosition) {
         super(startPosition);
+        isOffMap = false;
     }
 
-    public void update(float dt, float mapSpeed) {
-        getVelocity().x = -mapSpeed;
+    public void update(float dt, float mapSpeed, float minPos) {
+        setVelocity(new Vector3f(-mapSpeed, 0.f, 0.f));
+
+        if (getPosition().x() < minPos)
+            isOffMap = true;
+
         super.update(dt);
+    }
+
+    public boolean isOffMap() {
+        return isOffMap;
     }
 }

@@ -11,4 +11,8 @@ public class Player extends Entity {
     public Player(Vector3f startPosition) {
         super(startPosition);
     }
+
+    public float getRadius() {
+        return 0.5f;
+    }
 }
