@@ -12,7 +12,8 @@ public class Material {
     private Vertices vertices;
     private Indices indices;
 
-    public Material(MaterialBuilder materialBuilder) {
+    public Material(int renderPass, MaterialBuilder materialBuilder) {
+        this.renderPass = renderPass;
         // is null if not added
         vertices = materialBuilder.getVertices();
         uniforms = materialBuilder.getUniforms();

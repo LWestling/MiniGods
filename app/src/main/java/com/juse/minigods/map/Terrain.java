@@ -40,9 +40,9 @@ public class Terrain {
         }
     }
 
-    public void update(float dt) {
+    public void update(float dt, float terrainMovement) {
         for (TerrainColumn renderColumn : renderColumns) {
-            renderColumn.update(-dt); // test
+            renderColumn.update(-dt * terrainMovement); // test
         }
     }
 

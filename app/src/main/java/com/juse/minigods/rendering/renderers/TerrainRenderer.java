@@ -40,12 +40,9 @@ public class TerrainRenderer implements RendererInterface {
     public void setup(ShaderManager shaderManager, MaterialManager materialManager, AssetManager assetManager) {
         int vs, fs;
         try {
-            vs = shaderManager.createShader(GL_VERTEX_SHADER,
-                    assetManager.open(String.format(ShaderManager.SHADER_PATH_FORMAT, VS)));
-            fs = shaderManager.createShader(GL_FRAGMENT_SHADER,
-                    assetManager.open(String.format(ShaderManager.SHADER_PATH_FORMAT, FS)));
+            vs = loadShader(shaderManager, assetManager, GL_VERTEX_SHADER, VS);
+            fs = loadShader(shaderManager, assetManager, GL_FRAGMENT_SHADER, FS);
         } catch (IOException e) {
-            e.printStackTrace();
             CrashManager.ReportCrash(CrashManager.CrashType.GRAPHICS, "Error loading: " +
                     "vs / fs in terrain renderer", e);
             return;
@@ -63,8 +60,8 @@ public class TerrainRenderer implements RendererInterface {
 
             // build vertices
             MaterialBuilder materialBuilder = new MaterialBuilder();
-            materialBuilder.addVertices(DataUtils.ToBuffer(vertices), 0,
-                    vertices.length, 0, GL_DYNAMIC_DRAW);
+            materialBuilder.addVertices(DataUtils.ToBuffer(vertices), vertices.length,
+                    GL_DYNAMIC_DRAW, new int[] {0}, new int[] {0}, new int[] {0});
             materialBuilder.addIndices(DataUtils.ToBuffer(integers), integers.length, 0);
 
             // translation uniform
@@ -72,16 +69,16 @@ public class TerrainRenderer implements RendererInterface {
                     (new int[]{2}),
                     DataUtils.ToBuffer(new Matrix4f()
                             .translate(renderColumn.getOffset(), 0.f, 0.f)
-                            .scale(terrain.getColumnWidth(), 1.f, 1.f))
+                            .scale(terrain.getColumnWidth() + 0.005f, 1.f, 1.f))
             );
 
-            columns[i] = new Material(materialBuilder);
+            columns[i] = new Material(renderPass, materialBuilder);
             materialManager.addMaterial(columns[i]);
         }
     }
 
     public void render(ShaderManager shaderManager, MaterialManager materialManager) {
-        materialManager.render(renderPass);
+        materialManager.render(renderPass, 1);
     }
 
     public void update(MaterialManager materialManager) {

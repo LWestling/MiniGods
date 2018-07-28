@@ -14,9 +14,9 @@ public class MaterialBuilder {
         indices = null;
     }
 
-    public void addVertices(FloatBuffer vertexBuffer, int vertexLocation,
-                            int vertexCount, int vertexOffset, int drawFlag) {
-        vertices = new Vertices(vertexBuffer, vertexLocation, vertexCount, vertexOffset, drawFlag);
+    public void addVertices(FloatBuffer vertexBuffer, int vertexCount, int drawFlag,
+                            int vertexLocations[], int strides[], int offsets[]) {
+        vertices = new Vertices(vertexBuffer, vertexCount, drawFlag, vertexLocations, strides, offsets);
     }
 
     public void addUniforms(int uniformLocations[], FloatBuffer... uniformBuffers) {

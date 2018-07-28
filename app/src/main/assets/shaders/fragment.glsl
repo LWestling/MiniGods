@@ -3,17 +3,18 @@
 precision lowp float;
 
 in vec3 pos;
-in vec3 normal;
+in vec3 outNormal;
 out vec4 finalColor;
 
 vec4 calcLight(vec3 color) {
-    vec3 light = vec3(0.f, 6.f, 0.f);
+    vec3 light = vec3(10.f, 0.1f, 10.f);
     vec3 posToLight = normalize(light - pos);
-    vec3 lightReflection = reflect(-posToLight, normal);
+    vec3 lightReflection = reflect(-posToLight, outNormal);
     vec3 toCamera = normalize(-pos);
     float specular = pow(max(dot(lightReflection, toCamera), 0.f), 100.f);
+    vec3 ambient = vec3(0.2f, 0.2f, 0.2f) * color;
 
-    return vec4(color * (dot(posToLight, normal) + specular), 1.f);
+    return vec4(color * (dot(posToLight, outNormal) + specular) + ambient, 1.f);
 }
 
 void main() {

@@ -6,7 +6,7 @@ public class Uniforms {
     private FloatBuffer uniformBuffers[]; // change to one float buffer with all data in? (TODO)
     private int uniformLocations[];
 
-    Uniforms(int uniformLocations[], FloatBuffer... uniformBuffers) {
+    public Uniforms(int uniformLocations[], FloatBuffer... uniformBuffers) {
         this.uniformBuffers = uniformBuffers;
         this.uniformLocations = uniformLocations;
     }

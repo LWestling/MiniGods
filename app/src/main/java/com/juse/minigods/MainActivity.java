@@ -7,7 +7,6 @@ import android.view.MotionEvent;
 
 import com.juse.minigods.game.Game;
 import com.juse.minigods.rendering.GameRenderer;
-import com.juse.minigods.rendering.MaterialManager;
 import com.juse.minigods.rendering.renderers.ObstacleRenderer;
 import com.juse.minigods.rendering.renderers.PlayerRenderer;
 import com.juse.minigods.rendering.renderers.RendererInterface;
@@ -27,14 +26,12 @@ public class MainActivity extends Activity {
 
     private Vector2f lastPos, lookAlong;
     private Vector3f lookDirection;
-    private float testY;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         lookAlong = new Vector2f(0.f, 0.f);
         lookDirection = new Vector3f(0.f, -0.1f, -1.f);
-        testY = 0.1f;
 
         setupGame();
         setupGameRenderer();
@@ -80,13 +77,12 @@ public class MainActivity extends Activity {
         switch (e.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 lastPos = new Vector2f(x, y);
-                testY += 0.1f;
                 break;
             case MotionEvent.ACTION_MOVE:
                 lookAlong.add(new Vector2f(x, y).sub(lastPos).mul(0.004f));
 
                 Matrix3f lookRotation = new Matrix3f().rotationXYZ(-lookAlong.y(), -lookAlong.x(), 0.f);
-                MaterialManager.updateCamera(new Vector3f(0.f, testY, 1.f), new Vector3f(lookDirection).mul(lookRotation));
+                game.updateCamera(Game.CAMERA_START_POS, new Vector3f(lookDirection).mul(lookRotation));
 
                 lastPos = new Vector2f(x, y);
                 break;
