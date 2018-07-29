@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class Game {
     private static final float SCORE_POWER = 3.f, SPEED_POWER = 1.1f,
         SCORE_MUL = 0.001f, SPEED_MUL = 0.02f, SPEED_START = 2.3f, START_OFFSET = -19.f,
-        PLAYER_START_SPEED = 6.5f, PLAYER_BASE_FALL_MUL = 0.35f; // change with difficulty or something?
+        PLAYER_START_SPEED = 6.5f, PLAYER_BASE_FALL_MUL = 0.35f, TREE_TIMER = 0.5f; // change with difficulty or something?
     private static final int ROWS = 13, COLUMNS = 18;
 
     private static final Vector3f START_POS = new Vector3f(-3.f, 0.f, 3.f);
@@ -34,7 +34,7 @@ public class Game {
     private float score;
 
     private float playerSpeed, playerFallMultiplier;
-    private float totalTime, mapSpeed;
+    private float totalTime, mapSpeed, treeTimer;
 
     private static CameraProjectionManager cameraProjectionManager; // THIS IS FOR TESTING; MOVE CAMERA TO LOGIC, OR JUST MAKE IT A CONSTANT
 
@@ -64,17 +64,19 @@ public class Game {
         gameTimer.resetTimer();
         score = 0;
         totalTime = 0;
+        treeTimer = TREE_TIMER;
     }
 
     public void update() {
         float dt = gameTimer.calcDeltaTime();
 
         // test
-        if (random.nextInt(20) == 0)
+        if ((treeTimer -= dt) <= 0.f) {
             spawnObstacleLine();
+            treeTimer = TREE_TIMER + mapSpeed * 0.0001f; // less tree if faster to balance it out
+        }
 
         updateGame(dt);
-        player.update(dt);
 
         terrain.update(dt, mapSpeed);
 
@@ -82,11 +84,13 @@ public class Game {
             obstacle.update(dt, mapSpeed, START_OFFSET);
             if (obstacle.isOffMap())
                 obstacles.remove(); // first tree added will always be first to be removed
-            if (player.getPosition().distance(obstacle.getPosition()) < player.getRadius())
+            if (player.getPosition().distance(obstacle.getPosition()) < player.getRadius()) {
                 startGameSession();
+                return;
+            }
         }
 
-        // test stuff
+        player.update(dt);
         if (player.getPosition().z < -player.getRadius() || player.getPosition().z() > ROWS - 1)
             startGameSession();
     }
