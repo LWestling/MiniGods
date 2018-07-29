@@ -83,7 +83,7 @@ public class TerrainRenderer implements RendererInterface {
     }
 
     public void render(ShaderManager shaderManager, MaterialManager materialManager) {
-        materialManager.render(renderPass, 2);
+        materialManager.render(renderPass, 2, 4, 5);
     }
 
     public void update(MaterialManager materialManager) {

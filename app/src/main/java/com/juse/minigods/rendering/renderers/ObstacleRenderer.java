@@ -47,7 +47,7 @@ public class ObstacleRenderer implements RendererInterface {
 
         renderPass = materialManager.createRenderPass(vs, fs, shaderManager);
 
-        ObjLoader objLoader = new ObjLoader("tree/lowpolytree", ObjLoader.ModelType.Quads);
+        ObjLoader objLoader = new ObjLoader("tree/lowpolytree");
         MaterialBuilder builder = objLoader.load(assetManager);
         builder.addUniforms(new int[] {3}, DataUtils.ToBuffer(new Matrix4f().translate(0.f, 0.f, 3.f)));
 
@@ -58,7 +58,7 @@ public class ObstacleRenderer implements RendererInterface {
     public void render(ShaderManager shaderManager, MaterialManager materialManager) {
         for (Obstacle obstacle : obstacles) {
             tree.getUniforms().updateUniform(DataUtils.ToBuffer(new Matrix4f().translate(obstacle.getPosition())), 0);
-            materialManager.render(renderPass, 2);
+            materialManager.render(renderPass, 2, 4, 5);
         }
     }
 

@@ -13,6 +13,6 @@ public class Player extends Entity {
     }
 
     public float getRadius() {
-        return 0.8f;
+        return 0.6f;
     }
 }

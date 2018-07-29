@@ -18,12 +18,7 @@ public class ObjLoader {
     private static final String MODEL_PATH = "models/%s.obj";
     private static final String MTL_LIB = "mtllib", MTL_USE = "usemtl",
             VERTEX = "v", VERTEX_NORMAL = "vn", FACE = "f", SPLIT = " ", FACE_SPLIT = "/";
-    private static final int QUAD = 4, TRIANGLE = 3, FACE_LEN = 3, UNAVAILABLE = -1;
-
-    public enum ModelType {
-        Quads, Triangles
-    }
-    private ModelType modelType;
+    private static final int FACE_LEN = 3, UNAVAILABLE = -1;
 
     private String name;
     private String mtlLib, mtl;
@@ -31,9 +26,8 @@ public class ObjLoader {
     private ArrayList<Vector3f> vertices, normals, texCoords /* NYI */;
     private ArrayList<ArrayList<FacePart>> faces;
 
-    public ObjLoader(String name, ModelType modelType) {
+    public ObjLoader(String name) {
         this.name = name;
-        this.modelType = modelType;
 
         vertices = new ArrayList<>();
         normals = new ArrayList<>();
@@ -47,15 +41,8 @@ public class ObjLoader {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(stream));
 
             String line;
-
-            if (modelType == ModelType.Quads) {
-                while ((line = bufferedReader.readLine()) != null) {
-                    applyLineQua(line);
-                }
-            } else if (modelType == ModelType.Triangles) {
-                while ((line = bufferedReader.readLine()) != null) {
-                    applyLineTri(line);
-                }
+            while ((line = bufferedReader.readLine()) != null) {
+                applyLine(line);
             }
 
             return buildModelBuilder();
@@ -116,7 +103,9 @@ public class ObjLoader {
         return vertices.toArray(new Vector3f[]{});
     }
 
-    private void handleGeneralSplit(String[] split) {
+    private void applyLine(String line) {
+        String split[] = line.split(SPLIT);
+
         switch (split[0]) {
             case MTL_LIB:
                 mtlLib = split[1];
@@ -128,17 +117,8 @@ public class ObjLoader {
                 vertices.add(toVec3(split, 1));
                 break;
             case VERTEX_NORMAL:
-                normals.add(toVec3(split, 1).mul(-1));
+                normals.add(toVec3(split, 1).normalize());
                 break;
-        }
-    }
-
-    private void applyLineQua(String line) {
-        String split[] = line.split(SPLIT);
-
-        handleGeneralSplit(split);
-
-        switch (split[0]) {
             case FACE:
                 ArrayList<FacePart> faceParts = new ArrayList<>();
                 for (int i = 1; i < split.length; i++) {
@@ -172,17 +152,6 @@ public class ObjLoader {
         }
         
         return new FacePart(vertex, tex, normal);
-    }
-
-    private void applyLineTri(String line) {
-        String split[] = line.split(SPLIT);
-
-        handleGeneralSplit(split);
-        switch (split[0]) {
-            case FACE:
-
-                break;
-        }
     }
 
     private Vector3f toVec3(String[] split, int offset) {

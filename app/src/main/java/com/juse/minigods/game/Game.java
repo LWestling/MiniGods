@@ -3,7 +3,9 @@ package com.juse.minigods.game;
 import com.juse.minigods.map.Terrain;
 import com.juse.minigods.rendering.CameraProjectionManager;
 
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -15,13 +17,13 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 
 public class Game {
-    private static final float SCORE_POWER = 3.f, SPEED_POWER = 1.1f,
+    private static final float SCORE_POWER = 3.f, SPEED_POWER = 1.25f,
         SCORE_MUL = 0.001f, SPEED_MUL = 0.02f, SPEED_START = 2.3f, START_OFFSET = -19.f,
         PLAYER_START_SPEED = 6.5f, PLAYER_BASE_FALL_MUL = 0.35f, TREE_TIMER = 0.5f; // change with difficulty or something?
     private static final int ROWS = 13, COLUMNS = 18;
 
     private static final Vector3f START_POS = new Vector3f(-3.f, 0.f, 3.f);
-    private static final Vector3f CAMERA_START_POS = new Vector3f(0.f, 6.0f, 11.5f);
+    public static final Vector3f CAMERA_START_POS = new Vector3f(0.f, 6.0f, 11.5f);
     private static final Vector3f CAMERA_START_DIR = new Vector3f(0.f, -1.f, -1.f);
 
     private Terrain terrain;
@@ -36,6 +38,8 @@ public class Game {
     private float playerSpeed, playerFallMultiplier;
     private float totalTime, mapSpeed, treeTimer;
 
+    private static Vector4f universalLightPosition;
+    private static Quaternionf universalLightRotation;
     private static CameraProjectionManager cameraProjectionManager; // THIS IS FOR TESTING; MOVE CAMERA TO LOGIC, OR JUST MAKE IT A CONSTANT
 
     public Game() {
@@ -55,6 +59,9 @@ public class Game {
 
     // This starts a new game session, reset player and such
     public void startGameSession() {
+        universalLightPosition = new Vector4f(0.f, 25.f, 0.f, 1.f);
+        universalLightRotation = new Quaternionf();
+
         player.setPosition(new Vector3f(START_POS));
         player.setVelocity(new Vector3f(0.f, 0.f, playerSpeed * playerFallMultiplier));
 
@@ -69,11 +76,12 @@ public class Game {
 
     public void update() {
         float dt = gameTimer.calcDeltaTime();
+        universalLightRotation.rotate(dt * .1f, 0.f, 0.f);
 
         // test
         if ((treeTimer -= dt) <= 0.f) {
             spawnObstacleLine();
-            treeTimer = TREE_TIMER + mapSpeed * 0.0001f; // less tree if faster to balance it out
+            treeTimer = TREE_TIMER + mapSpeed * 0.00003f; // less tree if faster to balance it out
         }
 
         updateGame(dt);
@@ -85,14 +93,14 @@ public class Game {
             if (obstacle.isOffMap())
                 obstacles.remove(); // first tree added will always be first to be removed
             if (player.getPosition().distance(obstacle.getPosition()) < player.getRadius()) {
-                startGameSession();
+              //  startGameSession();
                 return;
             }
         }
 
         player.update(dt);
-        if (player.getPosition().z < -player.getRadius() || player.getPosition().z() > ROWS - 1)
-            startGameSession();
+       // if (player.getPosition().z < -player.getRadius() || player.getPosition().z() > ROWS - 1)
+          //  startGameSession();
     }
 
     private void updateGame(float dt) {
@@ -125,6 +133,10 @@ public class Game {
 
     public static CameraProjectionManager GetCamera() {
         return cameraProjectionManager;
+    }
+
+    public static Vector4f getUniversalLightPosition() {
+        return new Vector4f(universalLightPosition).rotate(universalLightRotation);
     }
 
     public float getScore() {

@@ -1,6 +1,9 @@
 #version 310 es
 
-precision lowp float;
+precision highp float;
+
+layout(location=4) uniform vec4 light;
+layout(location=5) uniform vec4 cam;
 
 in vec3 pos;
 in vec3 normal;
@@ -10,15 +13,14 @@ out vec4 finalColor;
 uniform sampler2D tex;
 
 vec4 calcLight(vec3 color) {
-    vec3 light = vec3(6.f, 6.f, 0.1f);
-    vec3 posToLight = normalize(light - pos);
+    vec3 posToLight = normalize(light.xyz - pos);
 
-    return vec4(color * (dot(posToLight, normal)), 1.f);
+    vec3 ambient = color * 0.6f;
+    vec3 diffuse = color * max((dot(posToLight, normal)), 0.f);
+
+    return vec4(diffuse + ambient, 1.f);
 }
 
 void main() {
-    vec3 color = texture(tex, texCoord).xyz + vec3(0.3f, 0.3f, 0.3f);
-    //vec3 color = vec3(texCoord.x, 0, texCoord.y);
-
-    finalColor = calcLight(color);
+    finalColor = calcLight(texture(tex, texCoord).xyz);
 }

@@ -10,6 +10,9 @@ import com.juse.minigods.rendering.Material.Material;
 import com.juse.minigods.rendering.Material.Uniforms;
 import com.juse.minigods.rendering.Material.Vertices;
 
+import org.joml.Vector3f;
+import org.joml.Vector4f;
+
 import java.util.ArrayList;
 
 import static android.opengl.GLES20.GL_ELEMENT_ARRAY_BUFFER;
@@ -22,6 +25,7 @@ import static android.opengl.GLES20.glActiveTexture;
 import static android.opengl.GLES20.glBindTexture;
 import static android.opengl.GLES20.glDepthFunc;
 import static android.opengl.GLES20.glEnable;
+import static android.opengl.GLES20.glUniform4f;
 import static android.opengl.GLES31.glUseProgram;
 
 /**
@@ -50,7 +54,7 @@ public class MaterialManager {
         renderPassBuckets.get(material.getRenderPass()).add(material);
     }
 
-    public void render(int renderPass, int cameraLocation) {
+    public void render(int renderPass, int cameraLocation, int lightLocation, int cameraPosLocation) {
         RenderPass pass = renderPasses.get(renderPass);
 
         glUseProgram(pass.getProgram());
@@ -58,6 +62,12 @@ public class MaterialManager {
         glDepthFunc(GL_LESS);
 
         Game.GetCamera().bindGraphicsData(cameraLocation);
+
+        Vector4f lightPos = Game.getUniversalLightPosition();
+        Vector3f cameraPos = Game.CAMERA_START_POS;
+        glUniform4f(lightLocation, lightPos.x(), lightPos.y(), lightPos.z(), lightPos.w());
+        glUniform4f(cameraPosLocation, cameraPos.x(), cameraPos.y(), cameraPos.z(), 1.f);
+
         for (Material material : renderPassBuckets.get(renderPass)) {
             render(material);
         }

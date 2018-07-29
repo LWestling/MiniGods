@@ -78,7 +78,7 @@ public class PlayerRenderer implements RendererInterface {
     }
 
     public void render(ShaderManager shaderManager, MaterialManager materialManager) {
-        materialManager.render(renderPass, 3);
+        materialManager.render(renderPass, 3, 5, 6);
     }
 
     public void update(MaterialManager materialManager) {
