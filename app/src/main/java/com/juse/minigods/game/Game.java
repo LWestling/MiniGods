@@ -87,7 +87,7 @@ public class Game {
         }
 
         // test stuff
-        if (player.getPosition().z < -4.f || player.getPosition().z() > 12.5f)
+        if (player.getPosition().z < -player.getRadius() || player.getPosition().z() > ROWS - 1)
             startGameSession();
     }
 

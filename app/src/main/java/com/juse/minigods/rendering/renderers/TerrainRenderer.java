@@ -17,6 +17,7 @@ import com.juse.minigods.reporting.CrashManager;
 import org.joml.Matrix4f;
 
 import java.io.IOException;
+import java.util.concurrent.locks.Lock;
 
 import static android.opengl.GLES20.GL_DYNAMIC_DRAW;
 import static android.opengl.GLES20.GL_FRAGMENT_SHADER;
@@ -86,17 +87,24 @@ public class TerrainRenderer implements RendererInterface {
     }
 
     public void update(MaterialManager materialManager) {
-        TerrainColumn[] renderColumns = terrain.getRenderColumns();
-        for (int i = 0; i < columns.length; i++) {
-            Vertices vertices = columns[i].getVertices();
+        Lock terrainUpdateLock = terrain.getTerrainUpdateLock();
+        if(terrainUpdateLock.tryLock()) {
+            try {
+                TerrainColumn[] renderColumns = terrain.getRenderColumns();
+                for (int i = 0; i < columns.length; i++) {
+                    Vertices vertices = columns[i].getVertices();
 
-            //vertices.updateData(renderColumns[i].getVertexData());
-            columns[i].getUniforms().updateUniform(
-                    DataUtils.ToBuffer(new Matrix4f()
-                            .translate(renderColumns[i].getOffset(), 0.f, 0.f)
-                            .scale(terrain.getColumnWidth() + 0.05f, 1.f, 1.f)),
-            0
-            );
+                    //vertices.updateData(renderColumns[i].getVertexData());
+                    columns[i].getUniforms().updateUniform(
+                            DataUtils.ToBuffer(new Matrix4f()
+                                    .translate(renderColumns[i].getOffset(), 0.f, 0.f)
+                                    .scale(terrain.getColumnWidth(), 1.f, 1.f)),
+                            0
+                    );
+                }
+            } finally {
+                terrainUpdateLock.unlock();
+            }
         }
     }
 }
