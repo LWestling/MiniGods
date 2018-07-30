@@ -64,11 +64,11 @@ public class TerrainColumn implements Cloneable{
             }
         }
 
-        for (int tri = 0; tri < (height + 1) * 2 /* Two extra triangle for bottom*/; tri++) {
+        for (int tri = 0; tri < (height + 1)* 2 /* Two extra triangle for bottom*/; tri++) {
             if (tri % 2 == 0) { // if even it's tri, tri + 1, tri + 2
                 for (int i = 0; i < TRIANGLE_SIZE; i++)
                     columnIndices.add(tri + i);
-            } else { // if odd it's tri + 2, tri + 1, tri + 3 (backwards and then loop back)
+            } else { // if odd it's tri + 2, tri + 1, tri + 3 (backwards and then loop back) (TODO: Probably a bug here, see screenshot)
                 for (int i = TRIANGLE_SIZE - 1; i > - TRIANGLE_SIZE - 1; i--)
                     columnIndices.add(tri + (i < 0 ? -i : i));
             }

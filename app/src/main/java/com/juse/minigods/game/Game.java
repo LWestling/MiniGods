@@ -1,9 +1,12 @@
 package com.juse.minigods.game;
 
+import com.juse.minigods.map.Map;
 import com.juse.minigods.map.Terrain;
 import com.juse.minigods.rendering.CameraProjectionManager;
 
 import org.joml.Quaternionf;
+import org.joml.Vector2f;
+import org.joml.Vector2i;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
@@ -18,15 +21,15 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Game {
     private static final float SCORE_POWER = 3.f, SPEED_POWER = 1.25f,
-        SCORE_MUL = 0.001f, SPEED_MUL = 0.02f, SPEED_START = 2.3f, START_OFFSET = -19.f,
-        PLAYER_START_SPEED = 8.5f, PLAYER_BASE_FALL_MUL = 0.45f, TREE_TIMER = 1.75f, TREE_TOTAL_MUL = 0.01f; // change with difficulty or something?
+        SCORE_MUL = 0.001f, SPEED_MUL = 0.02f, SPEED_START = 2.3f,
+        PLAYER_START_SPEED = 8.5f, PLAYER_BASE_FALL_MUL = 0.45f, TREE_TIMER = 1.75f; // change with difficulty or something?
     private static final int ROWS = 14, COLUMNS = 18;
 
     private static final Vector3f START_POS = new Vector3f(-6.f, 0.f, 3.f);
     public static final Vector3f CAMERA_START_POS = new Vector3f(0.f, 6.5f, 12.f);
     private static final Vector3f CAMERA_START_DIR = new Vector3f(0.f, -2.25f, -1.f);
 
-    private Terrain terrain;
+    private Map map;
     private Player player;
     private GameTimer gameTimer;
     private Random random;
@@ -45,7 +48,7 @@ public class Game {
     public Game() {
         player = new Player(new Vector3f(START_POS));
         gameTimer = new GameTimer();
-        terrain = new Terrain(ROWS, COLUMNS, START_OFFSET); // test numbers
+        map = new Map(new Vector2f(-18.f, -6.f), new Vector2i(COLUMNS, ROWS));
         random = new Random();
 
         playerSpeed = PLAYER_START_SPEED;
@@ -66,7 +69,7 @@ public class Game {
         player.setVelocity(new Vector3f(0.f, 0.f, playerSpeed * playerFallMultiplier));
 
         obstacles.clear();
-        terrain.reset(START_OFFSET);
+        map.reset();
 
         gameTimer.resetTimer();
         score = 0;
@@ -87,10 +90,10 @@ public class Game {
             System.out.println("T: " + treeTimer);
         }
 
-        terrain.update(dt, mapSpeed);
+        map.update(dt, mapSpeed);
 
         for (Obstacle obstacle : obstacles) {
-            obstacle.update(dt, mapSpeed, START_OFFSET);
+            obstacle.update(dt, mapSpeed, map.getPosition().x());
             if (obstacle.isOffMap())
                 obstacles.remove(); // first tree added will always be first to be removed
             if (player.getPosition().distance(obstacle.getPosition()) < player.getRadius()) {
@@ -111,17 +114,18 @@ public class Game {
     }
 
     private void spawnObstacleLine() {
+        Terrain terrain = map.getTerrain();
         obstacles.add(new Obstacle(
                 new Vector3f(
-                        START_OFFSET + COLUMNS * terrain.getColumnWidth() - 1.f,
+                        map.getPosition().x() + terrain.getWidth() - 1.f,
                         0.f,
-                        random.nextInt(terrain.getRows() - 1)
+                        random.nextInt(map.getTerrain().getRows() - 1)
                 )
         ));
     }
 
-    public Terrain getTerrain() {
-        return terrain;
+    public Map getMap() {
+        return map;
     }
 
     public Player getPlayer() {

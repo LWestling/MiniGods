@@ -7,11 +7,13 @@ import android.os.Bundle;
 import android.view.MotionEvent;
 
 import com.juse.minigods.game.Game;
+import com.juse.minigods.map.Map;
 import com.juse.minigods.rendering.GameRenderer;
 import com.juse.minigods.rendering.renderers.ObstacleRenderer;
 import com.juse.minigods.rendering.renderers.PlayerRenderer;
 import com.juse.minigods.rendering.renderers.RendererInterface;
 import com.juse.minigods.rendering.renderers.TerrainRenderer;
+import com.juse.minigods.rendering.renderers.WaterRenderer;
 import com.juse.minigods.reporting.CrashManager;
 
 import java.util.ArrayList;
@@ -54,14 +56,17 @@ public class MainActivity extends Activity {
     }
 
     private void setupGameRenderer() {
+        Map map = game.getMap();
+
         ArrayList<RendererInterface> rendererList = new ArrayList<>();
         rendererList.add(new PlayerRenderer(game.getPlayer()));
         rendererList.add(new ObstacleRenderer(game.getObstacles()));
         try {
-            rendererList.add(new TerrainRenderer(game.getTerrain(), BitmapFactory.decodeStream(getAssets().open("textures/grass.png"))));
+            rendererList.add(new TerrainRenderer(map.getTerrain(), BitmapFactory.decodeStream(getAssets().open("textures/grass.png"))));
         } catch (Exception e) {
             CrashManager.ReportCrash(CrashManager.CrashType.IO, "Not Found", e);
         }
+        rendererList.add(new WaterRenderer(map.getWaterGrids()));
 
         gameRenderer = new GameRenderer(getAssets());
         gameRenderer.setupRendererList(rendererList);

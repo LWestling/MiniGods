@@ -14,7 +14,7 @@ uniform sampler2D tex;
 
 vec4 calcLight(vec3 color) {
     vec3 posToLight = normalize(light.xyz - pos);
-    vec3 ambient = 0.6f * color;
+    vec3 ambient = 0.5f * color;
 
     return vec4(color * (dot(posToLight, outNormal)) + ambient, 1.f);
 }
