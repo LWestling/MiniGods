@@ -16,20 +16,20 @@ public class MaterialBuilder {
         imageTexture = null;
     }
 
-    public void addVertices(FloatBuffer vertexBuffer, int vertexCount, int drawFlag,
+    public void setVertices(FloatBuffer vertexBuffer, int vertexCount, int drawFlag,
                             int attributeSize[], int vertexLocations[], int strides[], int offsets[]) {
         vertices = new Vertices(vertexBuffer, vertexCount, drawFlag, attributeSize, vertexLocations, strides, offsets);
     }
 
-    public void addUniforms(int uniformLocations[], FloatBuffer... uniformBuffers) {
+    public void setUniforms(int uniformLocations[], FloatBuffer... uniformBuffers) {
         uniforms = new Uniforms(uniformLocations, uniformBuffers);
     }
 
-    public void addIndices(IntBuffer intBuffer, int size, int offset) {
+    public void setIndices(IntBuffer intBuffer, int size, int offset) {
         indices = new Indices(intBuffer, offset, size);
     }
 
-    public void addImageTexture(ImageTexture imageTexture) {
+    public void setImageTexture(ImageTexture imageTexture) {
         this.imageTexture = imageTexture;
     }
 

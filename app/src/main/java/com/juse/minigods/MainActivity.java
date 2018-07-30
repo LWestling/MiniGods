@@ -14,9 +14,6 @@ import com.juse.minigods.rendering.renderers.RendererInterface;
 import com.juse.minigods.rendering.renderers.TerrainRenderer;
 import com.juse.minigods.reporting.CrashManager;
 
-import org.joml.Vector2f;
-import org.joml.Vector3f;
-
 import java.util.ArrayList;
 
 public class MainActivity extends Activity {
@@ -25,14 +22,8 @@ public class MainActivity extends Activity {
     private GameRenderer gameRenderer;
     private boolean running;
 
-    private Vector2f lastPos, lookAlong;
-    private Vector3f lookDirection;
-
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        lookAlong = new Vector2f(0.f, 0.f);
-        lookDirection = new Vector3f(0.f, -0.1f, -1.f);
 
         setupGame();
         setupGameRenderer();

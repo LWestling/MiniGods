@@ -63,14 +63,14 @@ public class TerrainRenderer implements RendererInterface {
 
             // build vertices
             MaterialBuilder materialBuilder = new MaterialBuilder();
-            materialBuilder.addVertices(renderColumn.getVertexData(), renderColumn.getColumnVertexData().size(),
+            materialBuilder.setVertices(renderColumn.getVertexData(), renderColumn.getColumnVertexData().size(),
                     GL_DYNAMIC_DRAW, new int[] {3, 2}, new int[] {0, 1},
                     new int[] {Float.BYTES * 5, Float.BYTES * 5}, new int[] {0, Float.BYTES * 3});
-            materialBuilder.addIndices(DataUtils.ToBuffer(integers), integers.length, 0);
-            materialBuilder.addImageTexture(new ImageTexture(tileTexture));
+            materialBuilder.setIndices(DataUtils.ToBuffer(integers), integers.length, 0);
+            materialBuilder.setImageTexture(new ImageTexture(tileTexture));
 
             // translation uniform
-            materialBuilder.addUniforms(
+            materialBuilder.setUniforms(
                     (new int[]{3}),
                     DataUtils.ToBuffer(new Matrix4f()
                             .translate(renderColumn.getOffset(), 0.f, 0.f)

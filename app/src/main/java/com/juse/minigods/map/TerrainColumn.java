@@ -52,7 +52,19 @@ public class TerrainColumn implements Cloneable{
             }
         }
 
-        for (int tri = 0; tri < height * 2; tri++) {
+        // bottom row towards player to block view
+        for (int row = 0; row < 2; row++) {
+            for (int col = 0; col < 2; col++) {
+                columnVertexData.add(
+                        new VertexData(
+                                new Vector3f(col, -row, height - 1 + row),
+                                new Vector2f(col, row)
+                        )
+                );
+            }
+        }
+
+        for (int tri = 0; tri < (height + 1) * 2 /* Two extra triangle for bottom*/; tri++) {
             if (tri % 2 == 0) { // if even it's tri, tri + 1, tri + 2
                 for (int i = 0; i < TRIANGLE_SIZE; i++)
                     columnIndices.add(tri + i);

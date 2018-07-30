@@ -49,7 +49,7 @@ public class ObstacleRenderer implements RendererInterface {
 
         ObjLoader objLoader = new ObjLoader("tree/lowpolytree");
         MaterialBuilder builder = objLoader.load(assetManager);
-        builder.addUniforms(new int[] {3}, DataUtils.ToBuffer(new Matrix4f().translate(0.f, 0.f, 3.f)));
+        builder.setUniforms(new int[] {3}, DataUtils.ToBuffer(new Matrix4f().translate(0.f, 0.f, 3.f)));
 
         tree = new Material(renderPass, builder);
         materialManager.addMaterial(tree);

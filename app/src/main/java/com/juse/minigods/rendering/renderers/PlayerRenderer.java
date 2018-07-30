@@ -61,14 +61,14 @@ public class PlayerRenderer implements RendererInterface {
         renderPass = materialManager.createRenderPass(vs, fs, shaderManager);
 
         MaterialBuilder builder = new MaterialBuilder();
-        builder.addVertices(DataUtils.ToBuffer(model), 6, GL_STATIC_DRAW,
+        builder.setVertices(DataUtils.ToBuffer(model), 6, GL_STATIC_DRAW,
                 new int[] {3, 3, 2}, new int[] {0, 1, 2},
                 new int[] {Float.BYTES * 8, Float.BYTES * 8, Float.BYTES * 8},
                 new int[] {0, Float.BYTES * 3, Float.BYTES * 6});
-        builder.addUniforms(new int[] {4}, DataUtils.ToBuffer(new Matrix4f().translate(0.f, 0.f, 3.f)));
+        builder.setUniforms(new int[] {4}, DataUtils.ToBuffer(new Matrix4f().translate(0.f, 0.f, 3.f)));
 
         try {
-            builder.addImageTexture(new ImageTexture(BitmapFactory.decodeStream(assets.open("textures/player.png"))));
+            builder.setImageTexture(new ImageTexture(BitmapFactory.decodeStream(assets.open("textures/player.png"))));
         } catch (IOException e) {
             CrashManager.ReportCrash(CrashManager.CrashType.IO, "Not Found", e);
         }

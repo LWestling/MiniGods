@@ -72,7 +72,7 @@ public class ObjLoader {
 
         addVertexData(filteredFaceParts, materialBuilder);
 
-        materialBuilder.addIndices(
+        materialBuilder.setIndices(
                 DataUtils.ToBuffer(facePartIndices.toArray(new Integer[]{})),
                 facePartIndices.size(), 0
         );
@@ -90,7 +90,7 @@ public class ObjLoader {
                 vertexData.add(normals.get(facePart.normalIndex - 1));
             });
 
-            builder.addVertices(DataUtils.ToBuffer(toVec3Array(vertexData)), vertexData.size(),
+            builder.setVertices(DataUtils.ToBuffer(toVec3Array(vertexData)), vertexData.size(),
                     GLES31.GL_STATIC_DRAW, new int[] {3, 3}, new int[] {0, 1},
                     new int[] {Float.BYTES * 6, Float.BYTES * 6}, new int[] {0, Float.BYTES * 3});
         } else {

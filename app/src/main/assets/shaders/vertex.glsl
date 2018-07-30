@@ -10,8 +10,9 @@ out vec3 pos;
 out vec3 outNormal;
 
 void main() {
-    gl_Position = cameraProjection * model * vec4(vertexPos, 1.0);
+    vec4 worldPosition = model * vec4(vertexPos, 1.0);
+    gl_Position = cameraProjection * worldPosition;
 
     outNormal = normalize((inverse(transpose(model)) * vec4(normal, 0.f)).xyz); // mul on cpu
-    pos = vertexPos;
+    pos = worldPosition.xyz;
 }

@@ -51,7 +51,7 @@ public class GameRenderer implements GLSurfaceView.Renderer {
             }
         }
 
-        GLES31.glClearColor(0.95f, 0.05f, 0.05f, 0.95f);
+        GLES31.glClearColor(0.f, 148.f / 255.f, 1.f, 1.f);
 
         rendererList.forEach(rendererInterface -> rendererInterface.setup(shaderManager, materialManager, assetManager));
     }
