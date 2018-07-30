@@ -19,11 +19,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class Game {
     private static final float SCORE_POWER = 3.f, SPEED_POWER = 1.25f,
         SCORE_MUL = 0.001f, SPEED_MUL = 0.02f, SPEED_START = 2.3f, START_OFFSET = -19.f,
-        PLAYER_START_SPEED = 6.5f, PLAYER_BASE_FALL_MUL = 0.35f, TREE_TIMER = 0.75f, TREE_TOTAL_MUL = 0.05f; // change with difficulty or something?
+        PLAYER_START_SPEED = 8.5f, PLAYER_BASE_FALL_MUL = 0.45f, TREE_TIMER = 1.75f, TREE_TOTAL_MUL = 0.01f; // change with difficulty or something?
     private static final int ROWS = 14, COLUMNS = 18;
 
     private static final Vector3f START_POS = new Vector3f(-6.f, 0.f, 3.f);
-    public static final Vector3f CAMERA_START_POS = new Vector3f(0.f, 6.5f, 13.5f);
+    public static final Vector3f CAMERA_START_POS = new Vector3f(0.f, 6.5f, 12.f);
     private static final Vector3f CAMERA_START_DIR = new Vector3f(0.f, -2.25f, -1.f);
 
     private Terrain terrain;
@@ -78,14 +78,14 @@ public class Game {
         float dt = gameTimer.calcDeltaTime();
         universalLightRotation.rotate(dt * .05f, 0.f, 0.f);
 
+        updateGame(dt);
+
         // test
         if ((treeTimer -= dt) <= 0.f) {
             spawnObstacleLine();
-            treeTimer = TREE_TIMER - (float) Math.pow(totalTime, TREE_TOTAL_MUL) * TREE_TOTAL_MUL;
+            treeTimer = (float) Math.pow(TREE_TIMER, 1 / mapSpeed);
             System.out.println("T: " + treeTimer);
         }
-
-        updateGame(dt);
 
         terrain.update(dt, mapSpeed);
 
