@@ -11,8 +11,6 @@ import com.juse.minigods.rendering.MaterialManager;
 import com.juse.minigods.rendering.ShaderManager;
 import com.juse.minigods.reporting.CrashManager;
 
-import org.joml.Vector3f;
-
 import java.io.IOException;
 
 public class WaterRenderer implements RendererInterface {
@@ -38,24 +36,26 @@ public class WaterRenderer implements RendererInterface {
 
         renderPass = materialManager.createRenderPass(vs, fs, shaderManager);
 
-        int attrSize[] = {3};
-        int attrPos[] = {0};
-        int strides[] = {0};
-        int offsets[] = {0};
+        int attrSize[] = {3, 3};
+        int attrPos[] = {0, 1};
+        int strides[] = {0, 0};
 
         waterGridMaterials = new Material[waterGrids.length];
         for (int i = 0; i < waterGrids.length; i++) {
             WaterGrid waterGrid = waterGrids[i];
+            int offsets[] = {0, Float.BYTES * waterGrid.getVertexData().size() / 2};
 
             MaterialBuilder builder = new MaterialBuilder();
             builder.setVertices(
-                    DataUtils.ToBuffer(waterGrid.getPositions().toArray(new Vector3f[]{})),
-                    waterGrid.getPositions().size(), GLES31.GL_DYNAMIC_DRAW,
+                    DataUtils.ToBuffer(waterGrid.getVertexData()),
+                    waterGrid.getVertexData().size() / 2, GLES31.GL_DYNAMIC_DRAW,
                     attrSize, attrPos, strides, offsets);
+            /*
             builder.setIndices(
                     DataUtils.ToBuffer(waterGrid.getIndices().toArray(new Integer[] {})),
                     waterGrid.getIndices().size(), 0);
-            builder.setUniforms(new int[] {1}, DataUtils.ToBuffer(waterGrid.getWorld()));
+                    */
+            builder.setUniforms(new int[] {2}, DataUtils.ToBuffer(waterGrid.getWorld()));
 
             waterGridMaterials[i] = new Material(renderPass, builder);
             materialManager.addMaterial(waterGridMaterials[i]);
@@ -64,7 +64,7 @@ public class WaterRenderer implements RendererInterface {
 
     @Override
     public void render(ShaderManager shaderManager, MaterialManager materialManager) {
-        materialManager.render(renderPass, 2, 3, 4);
+        materialManager.render(renderPass, 3, 4, 5);
     }
 
     @Override

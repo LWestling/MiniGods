@@ -26,7 +26,7 @@ public class Game {
     private static final int ROWS = 14, COLUMNS = 18;
 
     private static final Vector3f START_POS = new Vector3f(-6.f, 0.f, 3.f);
-    public static final Vector3f CAMERA_START_POS = new Vector3f(0.f, 6.5f, 12.f);
+    public static final Vector3f CAMERA_START_POS = new Vector3f(0.f, 6.f, 14.f);
     private static final Vector3f CAMERA_START_DIR = new Vector3f(0.f, -2.25f, -1.f);
 
     private Map map;
@@ -86,7 +86,7 @@ public class Game {
         // test
         if ((treeTimer -= dt) <= 0.f) {
             spawnObstacleLine();
-            treeTimer = (float) Math.pow(TREE_TIMER, 1 / mapSpeed) - .4f;
+            treeTimer = (float) Math.pow(TREE_TIMER, 1 / mapSpeed) - .6f;
             System.out.println("T: " + treeTimer);
         }
 
@@ -103,7 +103,7 @@ public class Game {
         }
 
         player.update(dt);
-        if (player.getPosition().z < -player.getRadius() || player.getPosition().z() > ROWS - 1)
+        if (player.getPosition().z < -player.getRadius() || player.getPosition().z() > ROWS)
             startGameSession();
     }
 

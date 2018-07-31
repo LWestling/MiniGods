@@ -57,7 +57,7 @@ public class TerrainColumn implements Cloneable{
             columnVertexData.add(
                     new VertexData(
                             new Vector3f(col, -3.0f, height),
-                            new Vector2f(col, 1.f)
+                            new Vector2f(col, height + 1)
                     )
             );
         }

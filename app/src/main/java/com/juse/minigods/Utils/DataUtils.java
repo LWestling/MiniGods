@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
 
 /**
  * Created by LukasW on 2018-03-11.
@@ -36,6 +37,19 @@ public class DataUtils {
                 .asFloatBuffer();
 
         buffer.put(arr);
+
+        buffer.flip();
+        return buffer;
+    }
+
+    public static FloatBuffer ToBuffer(ArrayList<Float> floats) {
+        FloatBuffer buffer = ByteBuffer.allocateDirect(floats.size() * Float.BYTES)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
+
+        for (float f : floats) {
+            buffer.put(f);
+        }
 
         buffer.flip();
         return buffer;
