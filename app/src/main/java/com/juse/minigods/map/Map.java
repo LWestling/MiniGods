@@ -26,8 +26,8 @@ public class Map {
         Vector2f scale = new Vector2f(terrain.getColumnWidth(), -1 * position.y() / waterRows);
         Vector2i size = new Vector2i(gridSize.x(), waterRows);
 
-        waterGrids[0] = new WaterGrid(new Vector3f(position.x(), -0.25f, position.y()), scale, size);
-        waterGrids[1] = new WaterGrid(new Vector3f(position.x(), -0.25f, gridSize.y()), scale, size);
+        waterGrids[0] = new WaterGrid(new Vector3f(position.x(), -.5f, position.y()), scale, size);
+        waterGrids[1] = new WaterGrid(new Vector3f(position.x(), -.5f, gridSize.y()), scale, size);
     }
 
     public Vector2f position() {

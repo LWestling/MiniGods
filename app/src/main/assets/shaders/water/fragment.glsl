@@ -6,7 +6,7 @@ layout(location=3) uniform vec4 light;
 layout(location=4) uniform vec4 cam;
 
 in vec3 pos;
-in vec3 normal;
+in vec4 normal;
 out vec4 finalColor;
 
 vec4 calcLight(vec3 color) {

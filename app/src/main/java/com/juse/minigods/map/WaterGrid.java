@@ -29,22 +29,22 @@ public class WaterGrid {
         indices = new ArrayList<>();
 
         // Not optimized in anyway
-        for (int z = 0; z < size.y; z++) {
-            for (int x = 0; x < size.x; x++) {
-                positions.add(new Vector3f(x, (float) Math.random() * 0.5f, z));
+        for (int z = 0; z < size.y + 1; z++) {
+            for (int x = 0; x < size.x + 1; x++) {
+                positions.add(new Vector3f(x, (float)Math.random() * 0.3f, z));
             }
         }
 
         for (int row = 0; row < size.y; row++) {
-            for (int column = 0; column < size.x * 2; column++) {
-                if (column % 2 == 0) {
-                    indices.add(toIndex(column / 2, row / 2));
-                    indices.add(toIndex(column / 2 + 1, row / 2));
-                    indices.add(toIndex(column / 2, row / 2 + 1));
+            for (int halfColumn = 0; halfColumn < size.x * 2; halfColumn++) { // half column
+                if (halfColumn % 2 == 0) {
+                    indices.add(toIndex(halfColumn / 2, row));
+                    indices.add(toIndex(halfColumn / 2 + 1, row));
+                    indices.add(toIndex(halfColumn / 2, row + 1));
                 } else {
-                    indices.add(toIndex(column / 2 + 1, row / 2));
-                    indices.add(toIndex(column / 2 + 1, row / 2 + 1));
-                    indices.add(toIndex(column / 2, row / 2 + 1));
+                    indices.add(toIndex(halfColumn / 2 + 1, row));
+                    indices.add(toIndex(halfColumn / 2 + 1, row + 1));
+                    indices.add(toIndex(halfColumn / 2, row + 1));
                 }
             }
         }
@@ -59,7 +59,7 @@ public class WaterGrid {
     }
 
     private int toIndex(int column, int row) {
-        return column + row * size.x;
+        return column + row * (size.x + 1);
     }
 
     public Vector3f getPosition() {

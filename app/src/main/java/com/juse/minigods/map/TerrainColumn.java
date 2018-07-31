@@ -41,7 +41,7 @@ public class TerrainColumn implements Cloneable{
         columnVertexData = new ArrayList<>();
         columnIndices = new ArrayList<>();
 
-        for (int row = 0; row < height; row++) {
+        for (int row = 0; row < height + 1; row++) {
             for (int col = 0; col < 2; col++) {
                 columnVertexData.add(
                         new VertexData(
@@ -53,22 +53,20 @@ public class TerrainColumn implements Cloneable{
         }
 
         // bottom row towards player to block view
-        for (int row = 0; row < 2; row++) {
-            for (int col = 0; col < 2; col++) {
-                columnVertexData.add(
-                        new VertexData(
-                                new Vector3f(col, -row, height - 1 + row),
-                                new Vector2f(col, row)
-                        )
-                );
-            }
+        for (int col = 0; col < 2; col++) {
+            columnVertexData.add(
+                    new VertexData(
+                            new Vector3f(col, -3.0f, height),
+                            new Vector2f(col, 1.f)
+                    )
+            );
         }
 
-        for (int tri = 0; tri < (height + 1)* 2 /* Two extra triangle for bottom*/; tri++) {
+        for (int tri = 0; tri < (height + 1) * 2 /* Two extra triangle for bottom*/; tri++) {
             if (tri % 2 == 0) { // if even it's tri, tri + 1, tri + 2
                 for (int i = 0; i < TRIANGLE_SIZE; i++)
                     columnIndices.add(tri + i);
-            } else { // if odd it's tri + 2, tri + 1, tri + 3 (backwards and then loop back) (TODO: Probably a bug here, see screenshot)
+            } else { // if odd it's tri + 2, tri + 1, tri + 3 (backwards and then loop back) (TODO: Probably a bug here, see screen)
                 for (int i = TRIANGLE_SIZE - 1; i > - TRIANGLE_SIZE - 1; i--)
                     columnIndices.add(tri + (i < 0 ? -i : i));
             }
