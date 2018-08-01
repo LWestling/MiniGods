@@ -12,13 +12,14 @@ out vec4 finalColor;
 
 uniform sampler2D tex;
 
-vec4 calcLight(vec3 color) {
+vec4 calcLight(vec4 color) {
     vec3 posToLight = normalize(light.xyz - pos);
-    vec3 ambient = 0.5f * color;
+    vec3 ambient = 0.5f * color.rgb;
 
-    return vec4(color * (dot(posToLight, outNormal)) + ambient, 1.f);
+    return vec4(color.rgb * (dot(posToLight, outNormal)) + ambient, color.a);
 }
 
 void main() {
-    finalColor = calcLight(texture(tex, texCoord).xyz);
+    vec4 texColor = texture(tex, texCoord);
+    finalColor = calcLight(texColor);
 }

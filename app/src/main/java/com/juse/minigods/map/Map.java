@@ -52,6 +52,9 @@ public class Map {
 
     public void update(float dt, float mapSpeed) {
         terrain.update(dt, mapSpeed);
+        for (WaterGrid waterGrid : waterGrids) {
+            waterGrid.update(dt);
+        }
     }
 
     public Vector2f getPosition() {

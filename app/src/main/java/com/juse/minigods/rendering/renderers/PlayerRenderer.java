@@ -54,7 +54,7 @@ public class PlayerRenderer implements RendererInterface {
             fs = loadShader(shaderManager, assets, GL_FRAGMENT_SHADER, FS);
         } catch (IOException e) {
             CrashManager.ReportCrash(CrashManager.CrashType.GRAPHICS, "Error loading: " +
-                    "vs / fs in terrain renderer", e);
+                    "vs / fs in player renderer", e);
             return;
         }
 

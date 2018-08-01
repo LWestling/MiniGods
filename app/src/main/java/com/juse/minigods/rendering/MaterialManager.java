@@ -113,4 +113,16 @@ public class MaterialManager {
                     false, uniforms.getUniformBuffers()[i]);
         }
     }
+
+    public void render(int renderPass) {
+        RenderPass pass = renderPasses.get(renderPass);
+
+        glUseProgram(pass.getProgram());
+        glEnable(GLES31.GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+
+        for (Material material : renderPassBuckets.get(renderPass)) {
+            render(material);
+        }
+    }
 }

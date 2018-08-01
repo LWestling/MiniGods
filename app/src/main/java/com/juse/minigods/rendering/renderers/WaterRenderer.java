@@ -12,6 +12,7 @@ import com.juse.minigods.rendering.ShaderManager;
 import com.juse.minigods.reporting.CrashManager;
 
 import java.io.IOException;
+import java.util.concurrent.locks.Lock;
 
 public class WaterRenderer implements RendererInterface {
     private static final String VS = "water/vertex", FS = "water/fragment";
@@ -43,12 +44,12 @@ public class WaterRenderer implements RendererInterface {
         waterGridMaterials = new Material[waterGrids.length];
         for (int i = 0; i < waterGrids.length; i++) {
             WaterGrid waterGrid = waterGrids[i];
-            int offsets[] = {0, Float.BYTES * waterGrid.getVertexData().size() / 2};
+            int offsets[] = {0, Float.BYTES * waterGrid.getVertexData().capacity() / 2};
 
             MaterialBuilder builder = new MaterialBuilder();
             builder.setVertices(
-                    DataUtils.ToBuffer(waterGrid.getVertexData()),
-                    waterGrid.getVertexData().size() / 2, GLES31.GL_DYNAMIC_DRAW,
+                    waterGrid.getVertexData(),
+                    waterGrid.getVertexData().capacity() / 2, GLES31.GL_DYNAMIC_DRAW,
                     attrSize, attrPos, strides, offsets);
             /*
             builder.setIndices(
@@ -69,6 +70,18 @@ public class WaterRenderer implements RendererInterface {
 
     @Override
     public void update(MaterialManager materialManager) {
+        for (int i = 0; i < waterGrids.length; i++) {
+            Material material = waterGridMaterials[i];
+            WaterGrid waterGrid = waterGrids[i];
+            Lock lock = waterGrid.getVertexDataUpdateLock();
 
+            if(lock.tryLock()) {
+                try {
+                    material.getVertices().updateData(waterGrid.getVertexData());
+                } finally {
+                    lock.unlock();
+                }
+            }
+        }
     }
 }

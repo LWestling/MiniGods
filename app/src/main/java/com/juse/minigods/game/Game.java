@@ -20,9 +20,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 
 public class Game {
-    private static final float SCORE_POWER = 3.f, SPEED_POWER = 1.25f,
-        SCORE_MUL = 0.001f, SPEED_MUL = 0.02f, SPEED_START = 2.3f,
-        PLAYER_START_SPEED = 9.5f, PLAYER_BASE_FALL_MUL = 0.45f, TREE_TIMER = 1.75f; // change with difficulty or something?
+    private static final float SCORE_POWER = 3.f, SPEED_POWER = 1.15f,
+        SCORE_MUL = 0.001f, SPEED_MUL = 0.015f, SPEED_START = 2.7f,
+        PLAYER_START_SPEED = 9.5f, PLAYER_BASE_FALL_MUL = 0.45f, TREE_TIMER = 1.8f; // change with difficulty or something?
     private static final int ROWS = 14, COLUMNS = 18;
 
     private static final Vector3f START_POS = new Vector3f(-6.f, 0.f, 3.f);

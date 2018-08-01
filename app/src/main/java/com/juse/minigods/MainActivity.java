@@ -8,7 +8,9 @@ import android.view.MotionEvent;
 
 import com.juse.minigods.game.Game;
 import com.juse.minigods.map.Map;
+import com.juse.minigods.rendering.Font.Font;
 import com.juse.minigods.rendering.GameRenderer;
+import com.juse.minigods.rendering.renderers.FontRenderer;
 import com.juse.minigods.rendering.renderers.ObstacleRenderer;
 import com.juse.minigods.rendering.renderers.PlayerRenderer;
 import com.juse.minigods.rendering.renderers.RendererInterface;
@@ -43,7 +45,7 @@ public class MainActivity extends Activity {
             while (running) {
                 game.update();
                 try {
-                    Thread.sleep(25);
+                    Thread.sleep(50);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -59,7 +61,6 @@ public class MainActivity extends Activity {
         Map map = game.getMap();
 
         ArrayList<RendererInterface> rendererList = new ArrayList<>();
-        rendererList.add(new PlayerRenderer(game.getPlayer()));
         rendererList.add(new ObstacleRenderer(game.getObstacles()));
         try {
             rendererList.add(new TerrainRenderer(map.getTerrain(), BitmapFactory.decodeStream(getAssets().open("textures/grass.png"))));
@@ -67,6 +68,8 @@ public class MainActivity extends Activity {
             CrashManager.ReportCrash(CrashManager.CrashType.IO, "Not Found", e);
         }
         rendererList.add(new WaterRenderer(map.getWaterGrids()));
+        rendererList.add(new PlayerRenderer(game.getPlayer()));
+        rendererList.add(new FontRenderer(new Font("font", "fontData", getAssets())));
 
         gameRenderer = new GameRenderer(getAssets());
         gameRenderer.setupRendererList(rendererList);
