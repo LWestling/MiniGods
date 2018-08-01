@@ -125,4 +125,16 @@ public class MaterialManager {
             render(material);
         }
     }
+
+    public void render(int renderPass, Material[] materials) {
+        RenderPass pass = renderPasses.get(renderPass);
+
+        glUseProgram(pass.getProgram());
+        glEnable(GLES31.GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+
+        for (Material material : materials) {
+            render(material);
+        }
+    }
 }

@@ -22,6 +22,11 @@ public class Material {
         imageTexture = materialBuilder.getImageTexture();
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        return obj == this;
+    }
+
     /*
     private void createUBO() {
         ubo = new int[uniformBuffers.length];

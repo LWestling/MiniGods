@@ -20,9 +20,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 
 public class Game {
-    private static final float SCORE_POWER = 3.f, SPEED_POWER = 1.15f,
-        SCORE_MUL = 0.001f, SPEED_MUL = 0.015f, SPEED_START = 2.7f,
-        PLAYER_START_SPEED = 9.5f, PLAYER_BASE_FALL_MUL = 0.45f, TREE_TIMER = 1.8f; // change with difficulty or something?
+    private static final float SCORE_POWER = 2.f, SPEED_POWER = 1.15f,
+        SCORE_MUL = 0.01f, SPEED_MUL = 0.015f, SPEED_START = 2.7f,
+        PLAYER_START_SPEED = 9.5f, PLAYER_BASE_FALL_MUL = 0.45f, TREE_TIMER = 1.9f; // change with difficulty or something?
     private static final int ROWS = 14, COLUMNS = 18;
 
     private static final Vector3f START_POS = new Vector3f(-6.f, 0.f, 3.f);
@@ -44,6 +44,8 @@ public class Game {
     private static Vector4f universalLightPosition;
     private static Quaternionf universalLightRotation;
     private static CameraProjectionManager cameraProjectionManager; // THIS IS FOR TESTING; MOVE CAMERA TO LOGIC, OR JUST MAKE IT A CONSTANT
+
+    private boolean gameOver;
 
     public Game() {
         player = new Player(new Vector3f(START_POS));
@@ -83,11 +85,9 @@ public class Game {
 
         updateGame(dt);
 
-        // test
         if ((treeTimer -= dt) <= 0.f) {
             spawnObstacleLine();
-            treeTimer = (float) Math.pow(TREE_TIMER, 1 / mapSpeed) - .6f;
-            System.out.println("T: " + treeTimer);
+            treeTimer = (float) Math.pow(TREE_TIMER, 1 / mapSpeed) - .75f;
         }
 
         map.update(dt, mapSpeed);
@@ -110,7 +110,7 @@ public class Game {
     private void updateGame(float dt) {
         totalTime += dt;
         mapSpeed = (float) (Math.pow(totalTime, SPEED_POWER) * SPEED_MUL) + SPEED_START;
-        score += Math.pow(totalTime, SCORE_POWER) * SCORE_MUL;
+        score = (float) Math.pow(totalTime, SCORE_POWER) * SCORE_MUL;
     }
 
     private void spawnObstacleLine() {
@@ -142,6 +142,10 @@ public class Game {
 
     public static Vector4f getUniversalLightPosition() {
         return new Vector4f(universalLightPosition).rotate(universalLightRotation);
+    }
+
+    public boolean isGameOver() {
+        return gameOver;
     }
 
     public float getScore() {

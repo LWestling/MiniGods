@@ -1,7 +1,7 @@
 package com.juse.minigods.rendering.renderers;
 
 import android.content.res.AssetManager;
-import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 
 import com.juse.minigods.Utils.DataUtils;
 import com.juse.minigods.map.Terrain;
@@ -30,15 +30,14 @@ import static android.opengl.GLES20.GL_VERTEX_SHADER;
 
 public class TerrainRenderer implements RendererInterface {
     private final static String VS = "terrain/vertex", FS = "terrain/fragment";
+    private final static String TEXTURE_PATH = "textures/%s.png", GRASS = "grass", SAND = "sand";
 
     private Terrain terrain;
     private Material columns[];
     private int renderPass;
-    private Bitmap tileTexture;
 
-    public TerrainRenderer(Terrain terrain, Bitmap bitmap) {
+    public TerrainRenderer(Terrain terrain) {
         this.terrain = terrain;
-        this.tileTexture = bitmap;
     }
 
     public void setup(ShaderManager shaderManager, MaterialManager materialManager, AssetManager assetManager) {
@@ -57,6 +56,14 @@ public class TerrainRenderer implements RendererInterface {
         TerrainColumn[] renderColumns = terrain.getRenderColumns();
         columns = new Material[terrain.getColumnsSize()];
 
+        ImageTexture grass, sand;
+        try {
+            grass = new ImageTexture(BitmapFactory.decodeStream(assetManager.open(String.format(TEXTURE_PATH, GRASS))));
+        } catch (IOException e) {
+            CrashManager.ReportCrash(CrashManager.CrashType.IO, "Not Found", e);
+            return;
+        }
+
         for (int i = 0; i < columns.length; i++) {
             TerrainColumn renderColumn = renderColumns[i];
             Integer[] integers = renderColumn.getColumnIndices().toArray(new Integer[]{});
@@ -67,7 +74,7 @@ public class TerrainRenderer implements RendererInterface {
                     GL_DYNAMIC_DRAW, new int[] {3, 2}, new int[] {0, 1},
                     new int[] {Float.BYTES * 5, Float.BYTES * 5}, new int[] {0, Float.BYTES * 3});
             materialBuilder.setIndices(DataUtils.ToBuffer(integers), integers.length, 0);
-            materialBuilder.setImageTexture(new ImageTexture(tileTexture));
+            materialBuilder.setImageTexture(grass);
 
             // translation uniform
             materialBuilder.setUniforms(
