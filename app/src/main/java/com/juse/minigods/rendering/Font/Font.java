@@ -37,15 +37,9 @@ public class Font {
         } catch (IOException e) {
             CrashManager.ReportCrash(CrashManager.CrashType.IO, "Error loading font csv data " + fontCsvName, e);
         }
-
-        try {
-            createTexture();
-        } catch (Exception e) {
-            CrashManager.ReportCrash(CrashManager.CrashType.GRAPHICS, "Error creating font texture", e);
-        }
     }
 
-    private void createTexture() {
+    public void createTexture() {
         imageTexture = new ImageTexture(bitmap);
     }
 

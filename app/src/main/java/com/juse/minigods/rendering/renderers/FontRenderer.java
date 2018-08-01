@@ -41,6 +41,8 @@ public class FontRenderer implements RendererInterface{
 
     @Override
     public void setup(ShaderManager shaderManager, MaterialManager materialManager, AssetManager assets) {
+        font.createTexture();
+
         int vs, fs;
         try {
             vs = loadShader(shaderManager, assets, GL_VERTEX_SHADER, VS);
@@ -58,7 +60,7 @@ public class FontRenderer implements RendererInterface{
         materialBuilder.setVertices(DataUtils.ToBuffer(model), 6, GL_STATIC_DRAW,
                 new int[] {3, 2}, new int[] {0, 1}, new int[] {Float.BYTES * 5, Float.BYTES * 5}, new int[] {0, Float.BYTES * 3});
 
-        /*
+        /* THis works, Some fucking how
         try {
             materialBuilder.setImageTexture(new ImageTexture(BitmapFactory.decodeStream(assets.open("textures/font.png"))));
         } catch (IOException e) {
@@ -71,7 +73,7 @@ public class FontRenderer implements RendererInterface{
 
     @Override
     public void render(ShaderManager shaderManager, MaterialManager materialManager) {
-     //   materialManager.render(renderPass);
+        materialManager.render(renderPass);
     }
 
     @Override
