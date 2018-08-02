@@ -3,6 +3,7 @@ package com.juse.minigods.game;
 import com.juse.minigods.map.Map;
 import com.juse.minigods.map.Terrain;
 import com.juse.minigods.rendering.CameraProjectionManager;
+import com.juse.minigods.rendering.Font.TextCache;
 
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
@@ -20,9 +21,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 
 public class Game {
-    private static final float SCORE_POWER = 2.f, SPEED_POWER = 1.15f,
+    private static final float SCORE_POWER = 2.f, SPEED_POWER = 1.12f,
         SCORE_MUL = 0.01f, SPEED_MUL = 0.015f, SPEED_START = 2.7f,
-        PLAYER_START_SPEED = 9.5f, PLAYER_BASE_FALL_MUL = 0.45f, TREE_TIMER = 1.9f; // change with difficulty or something?
+        PLAYER_START_SPEED = 9.5f, PLAYER_BASE_FALL_MUL = 0.45f, TREE_TIMER = 2.f; // change with difficulty or something?
     private static final int ROWS = 14, COLUMNS = 18;
 
     private static final Vector3f START_POS = new Vector3f(-6.f, 0.f, 3.f);
@@ -32,6 +33,7 @@ public class Game {
     private Map map;
     private Player player;
     private GameTimer gameTimer;
+    private UIManager uiManager;
     private Random random;
 
     private ConcurrentLinkedQueue<Obstacle> obstacles;
@@ -45,13 +47,15 @@ public class Game {
     private static Quaternionf universalLightRotation;
     private static CameraProjectionManager cameraProjectionManager; // THIS IS FOR TESTING; MOVE CAMERA TO LOGIC, OR JUST MAKE IT A CONSTANT
 
-    private boolean gameOver;
+    private boolean gameOver, startNewGameSession;
+    private int highscore;
 
     public Game() {
         player = new Player(new Vector3f(START_POS));
         gameTimer = new GameTimer();
         map = new Map(new Vector2f(-18.f, -6.f), new Vector2i(COLUMNS, ROWS));
         random = new Random();
+        uiManager = new UIManager();
 
         playerSpeed = PLAYER_START_SPEED;
         playerFallMultiplier = PLAYER_BASE_FALL_MUL;
@@ -63,12 +67,14 @@ public class Game {
     }
 
     // This starts a new game session, reset player and such
-    public void startGameSession() {
+    public void startGameSession(TextCache cache) {
         universalLightPosition = new Vector4f(5.f, 25.f, 0.f, 1.f);
         universalLightRotation = new Quaternionf();
 
         player.setPosition(new Vector3f(START_POS));
         player.setVelocity(new Vector3f(0.f, 0.f, playerSpeed * playerFallMultiplier));
+
+        uiManager.setOverlayIngame(cache);
 
         obstacles.clear();
         map.reset();
@@ -76,38 +82,68 @@ public class Game {
         gameTimer.resetTimer();
         score = 0;
         totalTime = 0;
+        gameOver = false;
+        startNewGameSession = false;
         treeTimer = TREE_TIMER;
     }
 
-    public void update() {
+    public void update(TextCache cache) {
+        uiManager.update(cache);
+        if (isGameOver()) {
+            if (startNewGameSession) {
+                uiManager.hideOverlayGameover(cache);
+                startGameSession(cache);
+            }
+        } else {
+            playingUpdate();
+
+            if (isGameOver()) {
+                uiManager.hideOverlayIngame(cache);
+                uiManager.setOverlayGameover(cache, highscore);
+
+                if (score > highscore) {
+                    highscore = (int) score;
+                }
+            }
+        }
+    }
+
+    private void playingUpdate() {
         float dt = gameTimer.calcDeltaTime();
         universalLightRotation.rotate(dt * .05f, 0.f, 0.f);
 
         updateGame(dt);
-
-        if ((treeTimer -= dt) <= 0.f) {
-            spawnObstacleLine();
-            treeTimer = (float) Math.pow(TREE_TIMER, 1 / mapSpeed) - .75f;
-        }
-
         map.update(dt, mapSpeed);
+        updateObstacles(dt);
+        updatePlayer(dt);
 
+        uiManager.setCurrentScore((int) getScore());
+    }
+
+    private void updatePlayer(float dt) {
+        player.update(dt);
+        if (player.getPosition().z < -player.getRadius() || player.getPosition().z() > ROWS)
+            gameOver = true;
+    }
+
+    private void updateObstacles(float dt) {
         for (Obstacle obstacle : obstacles) {
             obstacle.update(dt, mapSpeed, map.getPosition().x());
             if (obstacle.isOffMap())
                 obstacles.remove(); // first tree added will always be first to be removed
             if (player.getPosition().distance(obstacle.getPosition()) < player.getRadius()) {
-                startGameSession();
+                gameOver = true;
                 return;
             }
         }
-
-        player.update(dt);
-        if (player.getPosition().z < -player.getRadius() || player.getPosition().z() > ROWS)
-            startGameSession();
     }
 
     private void updateGame(float dt) {
+        if ((treeTimer -= dt) <= 0.f) {
+            spawnObstacleLine();
+            treeTimer = (float) Math.pow(TREE_TIMER, 1 / mapSpeed) - .85f;
+        }
+
         totalTime += dt;
         mapSpeed = (float) (Math.pow(totalTime, SPEED_POWER) * SPEED_MUL) + SPEED_START;
         score = (float) Math.pow(totalTime, SCORE_POWER) * SCORE_MUL;
@@ -153,10 +189,22 @@ public class Game {
     }
 
     public void pressDown(float x, float y) {
-        player.setVelocity(new Vector3f(0.f, 0.f, -playerSpeed));
+        if (isGameOver()) {
+            startNewGameSession = true;
+        } else {
+            player.setVelocity(new Vector3f(0.f, 0.f, -playerSpeed));
+        }
     }
 
     public void pressUp(float x, float y) {
         player.setVelocity(new Vector3f(0.f, 0.f, playerSpeed * playerFallMultiplier));
+    }
+
+    public void setHighscore(int highscore) {
+        this.highscore = highscore;
+    }
+
+    public int getHighscore() {
+        return highscore;
     }
 }

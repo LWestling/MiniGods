@@ -23,25 +23,26 @@ public class TextCache {
 
     public int addStringToRender(Text text) {
         lock.lock();
-        int index = counter++;
+        int key = counter++;
 
         try {
-            stringsToRender.append(index, text);
-            requestUpdate(index);
+            stringsToRender.append(key, text);
+            requestUpdate(key);
         } finally {
             lock.unlock();
         }
 
-        return index;
+        return key;
     }
 
-    public void removeStringToRender() {
+    public void removeStringToRender(int... keys) {
         lock.lock();
 
-        int key = counter++;
         try {
-            stringsToRender.remove(key);
-            requestUpdate(key);
+            for (int key : keys) {
+                stringsToRender.remove(key);
+                requestUpdate(key);
+            }
         } finally {
             lock.unlock();
         }

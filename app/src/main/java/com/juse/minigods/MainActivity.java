@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.MotionEvent;
 
 import com.juse.minigods.game.Game;
+import com.juse.minigods.game.Highscore;
 import com.juse.minigods.map.Map;
 import com.juse.minigods.rendering.Font.Font;
 import com.juse.minigods.rendering.Font.TextCache;
@@ -39,32 +40,23 @@ public class MainActivity extends Activity {
 
         setContentView(glSurfaceView);
 
+        Highscore highscore = new Highscore();
         running = true;
         new Thread(() -> {
-            game.startGameSession();
+            TextCache cache = fontRenderer.getTextCache();
+            game.startGameSession(cache);
+            game.setHighscore(highscore.getHighscore(getApplicationContext()));
 
             while (running) {
-                game.update();
+                game.update(cache);
                 try {
                     Thread.sleep(50);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
-        }).start();
 
-        new Thread(() -> {
-            TextCache.Text text = new TextCache.Text("SCORE:\n0", -0.9f, 0.75f);
-            int scoreText = fontRenderer.getTextCache().addStringToRender(text);
-
-            while (running) {
-                fontRenderer.getTextCache().updateString(scoreText, "SCORE:\n" + (int) game.getScore()); // TODO better structure
-                try {
-                    Thread.sleep(200);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
+            highscore.overwriteHighscore(getApplicationContext(), game.getHighscore());
         }).start();
     }
 
