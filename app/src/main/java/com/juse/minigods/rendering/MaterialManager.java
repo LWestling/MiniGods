@@ -19,7 +19,6 @@ import static android.opengl.GLES20.GL_ELEMENT_ARRAY_BUFFER;
 import static android.opengl.GLES20.GL_LESS;
 import static android.opengl.GLES20.GL_TEXTURE0;
 import static android.opengl.GLES20.GL_TEXTURE_2D;
-import static android.opengl.GLES20.GL_TRIANGLES;
 import static android.opengl.GLES20.GL_UNSIGNED_INT;
 import static android.opengl.GLES20.glActiveTexture;
 import static android.opengl.GLES20.glBindTexture;
@@ -96,7 +95,7 @@ public class MaterialManager {
 
                 if (indices != null) {
                     GLES31.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices.getGlBufferLocation());
-                    GLES31.glDrawElements(GL_TRIANGLES, indices.getSize(), GL_UNSIGNED_INT, indices.getOffset());
+                    GLES31.glDrawElements(GLES31.GL_TRIANGLES, indices.getSize(), GL_UNSIGNED_INT, indices.getOffset());
                     GLES31.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
                 } else {
                     GLES31.glDrawArrays(GLES31.GL_TRIANGLES, 0, vertices.getVertexCount());

@@ -21,4 +21,8 @@ public class GameTimer {
         resetTimer();
         return dt;
     }
+
+    public float calcTimeSinceReset() {
+        return (System.currentTimeMillis() - lastTime) / 1000.f;
+    }
 }

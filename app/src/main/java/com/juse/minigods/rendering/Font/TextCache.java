@@ -93,6 +93,18 @@ public class TextCache {
             scale = 1.f;
         }
 
+        public Text(String content, float x, float y, float scale) {
+            this.content = content;
+            this.x = x;
+            this.y = y;
+
+            newlyAdded = true;
+
+            xSpacing = 1.05f;
+            ySpacing = 1.15f;
+            this.scale = scale;
+        }
+
         public void setContent(String content) {
             this.content = content;
         }

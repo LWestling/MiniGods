@@ -3,6 +3,8 @@ package com.juse.minigods.Utils;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -91,5 +93,11 @@ public class DataUtils {
                 allocateDirect(cap * Integer.BYTES).
                 order(ByteOrder.nativeOrder()).
                 asIntBuffer();
+    }
+
+    public static byte[] ToArray(InputStream open) throws IOException {
+        byte arr[] = new byte[open.available()];
+        int i = open.read(arr);
+        return arr;
     }
 }

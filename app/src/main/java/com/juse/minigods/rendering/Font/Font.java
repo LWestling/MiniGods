@@ -16,6 +16,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+/**
+ * Load the font data and create the texture to use when rendering the font.
+ */
 public class Font {
     private static final String BITMAP_PATH = "textures/%s.png", FONT_DATA_PATH = "fontData/%s.csv";
     private static final String CHARACTER = "Char", BASE = "Base", WIDTH = "Width", HEIGHT = "Height",

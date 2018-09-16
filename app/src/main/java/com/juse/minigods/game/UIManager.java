@@ -9,8 +9,8 @@ import java.util.Locale;
  */
 public class UIManager {
     // todo replace with localised?
-    private final static String SCORE_FORMAT = "SCORE:\n%d.", MSG_HIGHSCORE = "NEW HIGHSCORE!\nOLD: %d",
-            MSG_NT = "NICE TRY...\nHIGHSCORE: %d.", GAMEOVER_SCORE = "SCORE: %d.", CONTINUE = "PRESS TO PLAY AGAIN!";
+    private final static String SCORE_FORMAT = "SCORE:\n%d.", HIGHSCORE_FORMAT = "HIGHSCORE:\n%d.",
+            MSG_GRATZ = "NEW HIGHSCORE!", GAMEOVER_SCORE = "SCORE: %d.", CONTINUE = "PRESS TO PLAY AGAIN!";
 
     private enum UIState { NONE, IN_GAME, GAME_OVER }
     private UIState currentState;
@@ -18,30 +18,34 @@ public class UIManager {
     private int currentScore;
 
     // Text keys
-    private int ingameScore;
-    private int gameoverScore, gameoverHighscore, gameoverMessage;
+    private int ingameScore, ingameHighscore;
+    private int gameoverHighscoreMessage, gameoverScore, gameoverMessage;
 
     public UIManager() {
         currentState = UIState.NONE;
         currentScore = 0;
     }
 
-    public void setOverlayIngame(TextCache cache) {
+    public void setOverlayIngame(TextCache cache, int highscore) {
         ingameScore = cache.addStringToRender(
                 new TextCache.Text(String.format(Locale.ENGLISH, SCORE_FORMAT, 0), -0.9f, 0.75f)
+        );
+        ingameHighscore = cache.addStringToRender(
+                new TextCache.Text(String.format(Locale.ENGLISH, HIGHSCORE_FORMAT, highscore), -0.9f, -0.75f)
         );
 
         currentState = UIState.IN_GAME;
     }
 
     public void setOverlayGameover(TextCache cache, int highscore) {
-        String message = currentScore > highscore ? MSG_HIGHSCORE : MSG_NT;
+        if (currentScore > highscore) {
+            gameoverHighscoreMessage = cache.addStringToRender(
+                    new TextCache.Text(MSG_GRATZ, -0.9f, 0.65f, 2.f)
+            );
+        }
 
-        gameoverHighscore = cache.addStringToRender(
-                new TextCache.Text(String.format(Locale.ENGLISH, message, highscore), -0.3f, 0.4f)
-        );
         gameoverScore = cache.addStringToRender(
-                new TextCache.Text(String.format(Locale.ENGLISH, GAMEOVER_SCORE, currentScore), -0.3f, 0.7f)
+                new TextCache.Text(String.format(Locale.ENGLISH, GAMEOVER_SCORE, currentScore), -0.45f, 0.2f, 2)
         );
         gameoverMessage = cache.addStringToRender(
                 new TextCache.Text(CONTINUE, -0.55f, -.1f) // todo get x to center text somehow plz
@@ -51,11 +55,11 @@ public class UIManager {
     }
 
     public void hideOverlayIngame(TextCache cache) {
-        cache.removeStringToRender(ingameScore);
+        cache.removeStringToRender(ingameScore, ingameHighscore);
     }
 
     public void hideOverlayGameover(TextCache cache) {
-        cache.removeStringToRender(gameoverScore, gameoverHighscore, gameoverMessage);
+        cache.removeStringToRender(gameoverScore, gameoverMessage, gameoverHighscoreMessage);
     }
 
     public void setCurrentScore(int score) {
