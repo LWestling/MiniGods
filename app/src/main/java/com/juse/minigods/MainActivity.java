@@ -23,6 +23,7 @@ import java.util.ArrayList;
 public class MainActivity extends Activity {
     private GLSurfaceView glSurfaceView;
     private Game game;
+    private Highscore highscore;
     private GameRenderer gameRenderer;
     private FontRenderer fontRenderer;
     private boolean running;
@@ -40,12 +41,12 @@ public class MainActivity extends Activity {
 
         setContentView(glSurfaceView);
 
-        Highscore highscore = new Highscore();
+        highscore = new Highscore();
         running = true;
         new Thread(() -> {
             TextCache cache = fontRenderer.getTextCache();
-            game.startGameSession(cache);
             game.setHighscore(highscore.getHighscore(getApplicationContext()));
+            game.startGameSession(cache);
 
             while (running) {
                 game.update(cache);
@@ -55,9 +56,14 @@ public class MainActivity extends Activity {
                     e.printStackTrace();
                 }
             }
-
-            highscore.overwriteHighscore(getApplicationContext(), game.getHighscore());
         }).start();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        highscore.overwriteHighscore(getApplicationContext(), game.getHighscore());
     }
 
     private void setupGame() {
@@ -71,7 +77,7 @@ public class MainActivity extends Activity {
         rendererList.add(new ObstacleRenderer(game.getObstacles()));
         rendererList.add(new TerrainRenderer(map.getTerrain()));
         rendererList.add(new WaterRenderer(map.getWaterGrids()));
-        rendererList.add(new PlayerRenderer(game.getPlayer()));
+        rendererList.add(new PlayerRenderer(this, game.getPlayer()));
 
         fontRenderer = new FontRenderer(new Font("font", "fontData2", getAssets()));
         rendererList.add(fontRenderer);

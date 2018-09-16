@@ -21,24 +21,24 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 
 public class Game {
-    private static final float SCORE_POWER = 2.f, SPEED_POWER = 1.12f,
-        SCORE_MUL = 0.01f, SPEED_MUL = 0.015f, SPEED_START = 2.7f,
-        PLAYER_START_SPEED = 9.5f, PLAYER_BASE_FALL_MUL = 0.45f, TREE_TIMER = 2.f; // change with difficulty or something?
+    private static final float SCORE_POWER = 2.f, SPEED_POWER = 1.035f,
+        SCORE_MUL = 0.0065f, SPEED_MUL = 0.013f, SPEED_START = 7.f,
+        PLAYER_START_SPEED = 10.f, PLAYER_BASE_FALL_MUL = 0.45f, TREE_TIMER = 2.9f; // change with difficulty or something?
     private static final int ROWS = 14, COLUMNS = 18;
 
-    private static final Vector3f START_POS = new Vector3f(-6.f, 0.f, 3.f);
+    private static final Vector3f START_POS = new Vector3f(-6.f, 1.2f, 3.f);
     public static final Vector3f CAMERA_START_POS = new Vector3f(0.f, 6.f, 14.f);
     private static final Vector3f CAMERA_START_DIR = new Vector3f(0.f, -2.25f, -1.f);
 
     private Map map;
     private Player player;
-    private GameTimer gameTimer;
+    private GameTimer gameTimer, pauseTimer;
     private UIManager uiManager;
     private Random random;
 
     private ConcurrentLinkedQueue<Obstacle> obstacles;
 
-    private float score;
+    private float score, pauseTime;
 
     private float playerSpeed, playerFallMultiplier;
     private float totalTime, mapSpeed, treeTimer;
@@ -53,6 +53,7 @@ public class Game {
     public Game() {
         player = new Player(new Vector3f(START_POS));
         gameTimer = new GameTimer();
+        pauseTimer = new GameTimer();
         map = new Map(new Vector2f(-18.f, -6.f), new Vector2i(COLUMNS, ROWS));
         random = new Random();
         uiManager = new UIManager();
@@ -74,7 +75,7 @@ public class Game {
         player.setPosition(new Vector3f(START_POS));
         player.setVelocity(new Vector3f(0.f, 0.f, playerSpeed * playerFallMultiplier));
 
-        uiManager.setOverlayIngame(cache);
+        uiManager.setOverlayIngame(cache, highscore);
 
         obstacles.clear();
         map.reset();
@@ -87,8 +88,19 @@ public class Game {
         treeTimer = TREE_TIMER;
     }
 
+    // todo refactor, lot of that stuff lol
+    public void pauseGame(float dt) {
+        pauseTime = dt;
+        pauseTimer.resetTimer();
+    }
+
     public void update(TextCache cache) {
         uiManager.update(cache);
+
+        if (isGamePaused()) {
+            return;
+        }
+
         if (isGameOver()) {
             if (startNewGameSession) {
                 uiManager.hideOverlayGameover(cache);
@@ -100,6 +112,7 @@ public class Game {
             if (isGameOver()) {
                 uiManager.hideOverlayIngame(cache);
                 uiManager.setOverlayGameover(cache, highscore);
+                pauseGame(1.25f);
 
                 if (score > highscore) {
                     highscore = (int) score;
@@ -131,7 +144,7 @@ public class Game {
             obstacle.update(dt, mapSpeed, map.getPosition().x());
             if (obstacle.isOffMap())
                 obstacles.remove(); // first tree added will always be first to be removed
-            if (player.getPosition().distance(obstacle.getPosition()) < player.getRadius()) {
+            if (player.getTilePosition().distance(obstacle.getTilePosition()) < player.getRadius()) {
                 gameOver = true;
                 return;
             }
@@ -141,7 +154,7 @@ public class Game {
     private void updateGame(float dt) {
         if ((treeTimer -= dt) <= 0.f) {
             spawnObstacleLine();
-            treeTimer = (float) Math.pow(TREE_TIMER, 1 / mapSpeed) - .85f;
+            treeTimer = (float) Math.pow(TREE_TIMER, 1 / mapSpeed * 1.4f) - .7f;
         }
 
         totalTime += dt;
@@ -189,11 +202,17 @@ public class Game {
     }
 
     public void pressDown(float x, float y) {
-        if (isGameOver()) {
-            startNewGameSession = true;
-        } else {
-            player.setVelocity(new Vector3f(0.f, 0.f, -playerSpeed));
+        if (!isGamePaused()) {
+            if (isGameOver()) {
+                startNewGameSession = true;
+            } else {
+                player.setVelocity(new Vector3f(0.f, 0.f, -playerSpeed));
+            }
         }
+    }
+
+    private boolean isGamePaused() {
+        return pauseTime != 0 && pauseTimer.calcTimeSinceReset() < pauseTime;
     }
 
     public void pressUp(float x, float y) {

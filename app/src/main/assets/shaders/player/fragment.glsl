@@ -20,6 +20,6 @@ vec4 calcLight(vec4 color) {
 }
 
 void main() {
-    vec4 texColor = texture(tex, texCoord);
-    finalColor = calcLight(texColor);
+   vec4 texColor = texture(tex, texCoord);
+   finalColor = calcLight(texColor);
 }

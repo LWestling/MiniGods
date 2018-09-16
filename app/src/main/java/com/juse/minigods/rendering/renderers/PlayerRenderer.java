@@ -1,5 +1,6 @@
 package com.juse.minigods.rendering.renderers;
 
+import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.BitmapFactory;
 
@@ -10,6 +11,8 @@ import com.juse.minigods.rendering.Material.Material;
 import com.juse.minigods.rendering.Material.MaterialBuilder;
 import com.juse.minigods.rendering.MaterialManager;
 import com.juse.minigods.rendering.ShaderManager;
+import com.juse.minigods.rendering.model.Model;
+import com.juse.minigods.rendering.model.ModelLoader;
 import com.juse.minigods.reporting.CrashManager;
 
 import org.joml.Matrix4f;
@@ -27,15 +30,16 @@ import static android.opengl.GLES20.GL_VERTEX_SHADER;
 
 public class PlayerRenderer implements RendererInterface {
     private final static String VS = "player/vertex", FS = "player/fragment";
+    private final static int BASE_SHADER_UNIFORM_ID = 3;
 
     // before player model is done
     private static final float[] model = {
            0.f, 1.f, 0.f,   0.f, 0.f, 1.f,  0.f, 0.f,
-           1.f, 1.f, 0.f,   0.f, 0.f, 1.f,  1.f, 0.f,
+           1.5f, 1.f, 0.f,   0.f, 0.f, 1.f,  1.f, 0.f,
            0.f, 0.f, 0.f,   0.f, 0.f, 1.f,  0.f, 1.f,
 
-           1.f, 1.f, 0.f,   0.f, 0.f, 1.f,  1.f, 0.f,
-           1.f, 0.f, 0.f,   0.f, 0.f, 1.f,  1.f, 1.f,
+           1.5f, 1.f, 0.f,   0.f, 0.f, 1.f,  1.f, 0.f,
+           1.5f, 0.f, 0.f,   0.f, 0.f, 1.f,  1.f, 1.f,
            0.f, 0.f, 0.f,   0.f, 0.f, 1.f,  0.f, 1.f,
     };
 
@@ -43,11 +47,24 @@ public class PlayerRenderer implements RendererInterface {
     private Material playerMaterial;
     private int renderPass;
 
-    public PlayerRenderer(Player player) {
+    private Model playerModel;
+    private ModelLoader modelLoader;
+
+    public PlayerRenderer(Context context,  Player player) {
+        String fileNames[] = {"models/dog/BeagleDefault.fbx"};
+        Model models[] = new ModelLoader().loadModels(fileNames, context, context.getAssets());
+
+        if (models == null) {
+            return; // BAD TODO
+        }
+        playerModel = models[0];
+
         this.player = player;
     }
 
     public void setup(ShaderManager shaderManager, MaterialManager materialManager, AssetManager assets) {
+        modelLoader = new ModelLoader();
+
         int vs, fs;
         try {
             vs = loadShader(shaderManager, assets, GL_VERTEX_SHADER, VS);
@@ -61,16 +78,19 @@ public class PlayerRenderer implements RendererInterface {
         renderPass = materialManager.createRenderPass(vs, fs, shaderManager);
 
         MaterialBuilder builder = new MaterialBuilder();
-        builder.setVertices(DataUtils.ToBuffer(model), 6, GL_STATIC_DRAW,
+        builder.setVertices(DataUtils.ToBuffer(playerModel.vertices), playerModel.vertices.length / 3, GL_STATIC_DRAW,
                 new int[] {3, 3, 2}, new int[] {0, 1, 2},
-                new int[] {Float.BYTES * 8, Float.BYTES * 8, Float.BYTES * 8},
-                new int[] {0, Float.BYTES * 3, Float.BYTES * 6});
-        builder.setUniforms(new int[] {4}, DataUtils.ToBuffer(new Matrix4f().translate(0.f, 0.f, 3.f)));
+                new int[] {Float.BYTES * 8, Float.BYTES * 8, Float.BYTES * 8}, new int[] {0, Float.BYTES * 3, Float.BYTES * 6});
+        builder.setUniforms(new int[] {BASE_SHADER_UNIFORM_ID}, DataUtils.ToBuffer(new Matrix4f().translate(0.f, 0.f, 3.f)));
 
         try {
-            builder.setImageTexture(new ImageTexture(BitmapFactory.decodeStream(assets.open("textures/player.png"))));
+            builder.setImageTexture(new ImageTexture(BitmapFactory.decodeStream(assets.open("textures/" + playerModel.textures[0]))));
         } catch (IOException e) {
             CrashManager.ReportCrash(CrashManager.CrashType.IO, "Not Found", e);
+        }
+
+        if (playerModel.indices != null) {
+            builder.setIndices(DataUtils.ToBuffer(playerModel.indices), playerModel.indices.length, 0);
         }
 
         playerMaterial = new Material(renderPass, builder);
@@ -78,10 +98,19 @@ public class PlayerRenderer implements RendererInterface {
     }
 
     public void render(ShaderManager shaderManager, MaterialManager materialManager) {
-        materialManager.render(renderPass, 3, 5, 6);
+        materialManager.render(renderPass, BASE_SHADER_UNIFORM_ID + 1, BASE_SHADER_UNIFORM_ID + 2, BASE_SHADER_UNIFORM_ID + 3);
     }
 
     public void update(MaterialManager materialManager) {
-        playerMaterial.getUniforms().updateUniform(DataUtils.ToBuffer(new Matrix4f().translate(player.getPosition())), 0);
+        playerMaterial
+                .getUniforms()
+                .updateUniform(
+                        DataUtils.ToBuffer(
+                                new Matrix4f()
+                                        .translate(player.getPosition())
+                                        .rotateY(-(float) Math.PI / 2)
+                                        .rotateX((float) Math.PI / 2)
+                                        .scale(0.03f)
+                        ), 0);
     }
 }
