@@ -7,6 +7,8 @@ public class Model {
     public float[] vertices;
     public int[] indices;
     public String[] textures;
+    public Bone[] bones;
+    public Animation[] animations;
 
-    public boolean useNormals, colorPerVertex;
+    public boolean useNormals, useAnimations;
 }
