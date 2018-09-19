@@ -6,10 +6,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-<<<<<<< HEAD
 #include <sstream>
-=======
->>>>>>> f2f4e40... Trying out some c++ stuff
 
 #define add3DVecComponents(vec3d, vec) \
     vec.push_back(vec3d.x); \
@@ -23,7 +20,6 @@
 #define MODEL_DIR_PATH "com/juse/minigods/rendering/model/"
 #define ANIM_CLASS MODEL_DIR_PATH "Animation"
 
-<<<<<<< HEAD
 static Assimp::AndroidJNIIOSystem *androidJNIIOSystem = nullptr;
 static Assimp::Importer *importer = nullptr;
 
@@ -259,23 +255,6 @@ void setMatrix(JNIEnv *pEnv, jclass pJclass, jobject pJobject, aiMatrix4x4 const
             mat.c1, mat.c2, mat.c3, mat.c4,
             mat.d1, mat.d2, mat.d3, mat.d4
     );
-=======
-void ModelLoader::loadModel(const char* fileName) {
-    Assimp::Importer *importer = new Assimp::Importer();
-    importer->SetIOHandler(androidJNIIOSystem);
-
-    const aiScene *scene = importer->ReadFile(fileName, 0);
-    int i = scene->mNumMeshes;
-}
-
-jstring ModelLoader::loadModel(JNIEnv *env, const char* fileName) {
-    Assimp::Importer *importer = new Assimp::Importer();
-    importer->SetIOHandler(androidJNIIOSystem);
-    //const aiScene *scene = importer->ReadFile(fileName, 0);
-    // int i = 3;
-
-    std::string msg("HELLO DUDE ");
->>>>>>> f2f4e40... Trying out some c++ stuff
 
     jfieldID fieldId = pEnv->GetFieldID(pJclass, name, "Lorg/joml/Matrix4f;");
     pEnv->SetObjectField(pJobject, fieldId, matrix);
