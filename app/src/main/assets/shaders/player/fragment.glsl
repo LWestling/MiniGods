@@ -2,8 +2,8 @@
 
 precision lowp float;
 
-layout(location=5) uniform vec4 light;
-layout(location=6) uniform vec4 cam;
+layout(location=58) uniform vec4 light;
+layout(location=59) uniform vec4 cam;
 
 in vec3 pos;
 in vec3 outNormal;

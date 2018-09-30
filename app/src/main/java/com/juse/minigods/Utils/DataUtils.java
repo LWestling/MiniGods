@@ -100,4 +100,18 @@ public class DataUtils {
         int i = open.read(arr);
         return arr;
     }
+
+    public static FloatBuffer ToBuffer(Matrix4f[] mats) {
+        FloatBuffer buffer = ByteBuffer.allocateDirect(16 * mats.length * Float.BYTES) // 4x4 matrix
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
+
+        for (Matrix4f mat : mats) {
+            mat.get(buffer);
+            buffer.position(buffer.position() + 16);
+        }
+
+        buffer.flip();
+        return buffer;
+    }
 }

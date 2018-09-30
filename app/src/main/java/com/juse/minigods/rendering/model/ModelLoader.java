@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.res.AssetManager;
 import android.support.annotation.Nullable;
 
+import java.security.InvalidParameterException;
+
 public class ModelLoader {
     static {
         System.loadLibrary("game_engine");
@@ -17,7 +19,7 @@ public class ModelLoader {
         String filePath = getInternalDataFilePath(context);
 
         if (filePath == null) {
-            return null; // todo
+            throw new InvalidParameterException("No File Path Found");
         }
 
         prepareModelLoading(getInternalDataFilePath(context), assetManager);

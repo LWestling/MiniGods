@@ -2,15 +2,13 @@ package com.juse.minigods.rendering.renderers;
 
 import android.content.Context;
 import android.content.res.AssetManager;
-import android.graphics.BitmapFactory;
 
 import com.juse.minigods.Utils.DataUtils;
 import com.juse.minigods.game.Player;
-import com.juse.minigods.rendering.Material.ImageTexture;
-import com.juse.minigods.rendering.Material.Material;
 import com.juse.minigods.rendering.Material.MaterialBuilder;
 import com.juse.minigods.rendering.MaterialManager;
 import com.juse.minigods.rendering.ShaderManager;
+import com.juse.minigods.rendering.model.AnimatedModelMaterial;
 import com.juse.minigods.rendering.model.Model;
 import com.juse.minigods.rendering.model.ModelLoader;
 import com.juse.minigods.reporting.CrashManager;
@@ -20,7 +18,6 @@ import org.joml.Matrix4f;
 import java.io.IOException;
 
 import static android.opengl.GLES20.GL_FRAGMENT_SHADER;
-import static android.opengl.GLES20.GL_STATIC_DRAW;
 import static android.opengl.GLES20.GL_VERTEX_SHADER;
 
 /**
@@ -30,7 +27,7 @@ import static android.opengl.GLES20.GL_VERTEX_SHADER;
 
 public class PlayerRenderer implements RendererInterface {
     private final static String VS = "player/vertex", FS = "player/fragment";
-    private final static int BASE_SHADER_UNIFORM_ID = 3;
+    private final static int BASE_SHADER_UNIFORM_ID = 56;
 
     // before player model is done
     private static final float[] model = {
@@ -44,20 +41,17 @@ public class PlayerRenderer implements RendererInterface {
     };
 
     private Player player;
-    private Material playerMaterial;
     private int renderPass;
 
     private Model playerModel;
+    private AnimatedModelMaterial animatedModelMaterial;
     private ModelLoader modelLoader;
 
     public PlayerRenderer(Context context,  Player player) {
         String fileNames[] = {"models/dog/BeagleDefault.fbx"};
         Model models[] = new ModelLoader().loadModels(fileNames, context, context.getAssets());
-
-        if (models == null) {
-            return; // BAD TODO
-        }
         playerModel = models[0];
+        animatedModelMaterial = new AnimatedModelMaterial(playerModel,"Take 001");
 
         this.player = player;
     }
@@ -75,42 +69,36 @@ public class PlayerRenderer implements RendererInterface {
             return;
         }
 
+        AnimatedModelMaterial.AnimatedShaderInfo info = new AnimatedModelMaterial.AnimatedShaderInfo();
+        info.vertexLoc              = 0;
+        info.normalLoc              = 1;
+        info.uvLoc                  = 2;
+        info.boneIdLocation         = 3;
+        info.boneWeightLocation     = 4;
+        info.boneUniformLocation    = 5;
+
         renderPass = materialManager.createRenderPass(vs, fs, shaderManager);
 
         MaterialBuilder builder = new MaterialBuilder();
-        builder.setVertices(DataUtils.ToBuffer(playerModel.vertices), playerModel.vertices.length / 3, GL_STATIC_DRAW,
-                new int[] {3, 3, 2}, new int[] {0, 1, 2},
-                new int[] {Float.BYTES * 8, Float.BYTES * 8, Float.BYTES * 8}, new int[] {0, Float.BYTES * 3, Float.BYTES * 6});
-        builder.setUniforms(new int[] {BASE_SHADER_UNIFORM_ID}, DataUtils.ToBuffer(new Matrix4f().translate(0.f, 0.f, 3.f)));
-
-        try {
-            builder.setImageTexture(new ImageTexture(BitmapFactory.decodeStream(assets.open("textures/" + playerModel.textures[0]))));
-        } catch (IOException e) {
-            CrashManager.ReportCrash(CrashManager.CrashType.IO, "Not Found", e);
-        }
-
-        if (playerModel.indices != null) {
-            builder.setIndices(DataUtils.ToBuffer(playerModel.indices), playerModel.indices.length, 0);
-        }
-
-        playerMaterial = new Material(renderPass, builder);
-        materialManager.addMaterial(playerMaterial);
+        animatedModelMaterial.setLocation(BASE_SHADER_UNIFORM_ID, DataUtils.ToBuffer(new Matrix4f().translate(0.f, 0.f, 3.f)));
+        animatedModelMaterial.buildMaterial(renderPass, assets, builder, info);
     }
 
     public void render(ShaderManager shaderManager, MaterialManager materialManager) {
-        materialManager.render(renderPass, BASE_SHADER_UNIFORM_ID + 1, BASE_SHADER_UNIFORM_ID + 2, BASE_SHADER_UNIFORM_ID + 3);
+        materialManager.render(renderPass, BASE_SHADER_UNIFORM_ID + 1, BASE_SHADER_UNIFORM_ID + 2, BASE_SHADER_UNIFORM_ID + 3, animatedModelMaterial);
     }
 
     public void update(MaterialManager materialManager) {
-        playerMaterial
-                .getUniforms()
-                .updateUniform(
-                        DataUtils.ToBuffer(
-                                new Matrix4f()
-                                        .translate(player.getPosition())
-                                        .rotateY(-(float) Math.PI / 2)
-                                        .rotateX((float) Math.PI / 2)
-                                        .scale(0.03f)
-                        ), 0);
+        animatedModelMaterial.updateLocation(
+            DataUtils.ToBuffer(
+                    new Matrix4f()
+                            .translate(player.getPosition())
+                            .rotateY(-(float) Math.PI / 2)
+                            .rotateX((float) Math.PI / 2)
+                            .scale(0.03f)
+            )
+        );
+
+        animatedModelMaterial.update(0.01f);
     }
 }
