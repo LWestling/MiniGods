@@ -9,6 +9,7 @@ import com.juse.minigods.rendering.Material.MaterialBuilder;
 import com.juse.minigods.rendering.MaterialManager;
 import com.juse.minigods.rendering.ShaderManager;
 import com.juse.minigods.rendering.model.AnimatedModelMaterial;
+import com.juse.minigods.rendering.model.Animation;
 import com.juse.minigods.rendering.model.Model;
 import com.juse.minigods.rendering.model.ModelLoader;
 import com.juse.minigods.reporting.CrashManager;
@@ -44,13 +45,18 @@ public class PlayerRenderer implements RendererInterface {
     private int renderPass;
 
     private Model playerModel;
+    private Animation playerRunAnimation;
+
     private AnimatedModelMaterial animatedModelMaterial;
     private ModelLoader modelLoader;
 
     public PlayerRenderer(Context context,  Player player) {
-        String fileNames[] = {"models/dog/BeagleDefault.fbx"};
+        String fileNames[] = {"models/dog/BeagleDefault.fbx", "models/dog/BeagleRun.fbx"};
         Model models[] = new ModelLoader().loadModels(fileNames, context, context.getAssets());
+        assert models != null;
+
         playerModel = models[0];
+        playerRunAnimation = models[1].animations[models[1].getAnimationIndex("Take 001")];
         animatedModelMaterial = new AnimatedModelMaterial(playerModel,"Take 001");
 
         this.player = player;
@@ -94,11 +100,10 @@ public class PlayerRenderer implements RendererInterface {
                     new Matrix4f()
                             .translate(player.getPosition())
                             .rotateY(-(float) Math.PI / 2)
-                            .rotateX((float) Math.PI / 2)
                             .scale(0.03f)
             )
         );
 
-        animatedModelMaterial.update(0.01f);
+        animatedModelMaterial.update(0.01f, playerRunAnimation);
     }
 }

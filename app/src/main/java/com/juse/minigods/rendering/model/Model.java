@@ -61,7 +61,7 @@ public class Model {
             Bone bone = bones[i];
 
             boneIndices.put(bone.name, i);
-            boneFinalTransformation[i] = bone.transformation;
+            boneFinalTransformation[i] = new Matrix4f(bone.transformation.transpose());
 
             for (int vertexWeightIndex = 0; vertexWeightIndex < bone.vertexWeights.length; vertexWeightIndex++) {
                 VertexWeight weight = bone.vertexWeights[vertexWeightIndex];
@@ -70,6 +70,7 @@ public class Model {
                     if (boneWeights[weight.vertexId][j] == 0) {
                         boneIds[weight.vertexId][j] = i;
                         boneWeights[weight.vertexId][j] = weight.weight;
+                        break;
                     }
                 }
             }
@@ -89,6 +90,7 @@ public class Model {
     }
 
     private void extractNodes(HashMap<String, Integer> nodeIndices, Node node) {
+        node.transformation.transpose();
         nodeIndices.put(node.name, nodes.size());
         nodes.add(node);
 
@@ -97,27 +99,29 @@ public class Model {
         }
     }
 
-    public void updateBoneTransformations(int animationIndex, double time) {
-        Animation animation = animations[animationIndex];
-
-        double tick = (animation.getTicksPerSeconds() / time);
+    public void updateBoneTransformations(Animation animation, double time) {
+        double tick = (animation.getTicksPerSeconds() * time);
         tick %= animation.getDuration();
 
         updateNodeHierarchy(animation, rootNode, new Matrix4f(), tick);
     }
 
     private void updateNodeHierarchy(Animation animation, Node node, Matrix4f parentTransformation, double tick) {
-        Matrix4f transformation = node.transformation;
+        Matrix4f transformation = new Matrix4f(node.transformation);
 
         Animation.NodeChannel channel = animation.getNodeChannel(node.name);
         if (channel != null) {
-            transformation = parentTransformation.mul(calculateMatrix(channel, tick));
+            transformation = calculateMatrix(channel, tick);
         }
+        parentTransformation.mul(transformation, transformation);
 
         int boneIndex = getBoneIndex(node.name);
         if (boneIndex >= 0) {
-            boneFinalTransformation[getBoneIndex(node.name)] =
-                    rootInverse.mul(transformation.mul(bones[boneIndex].transformation));
+            // new matrix since transformation is also sent to children
+            Matrix4f finalTrans = new Matrix4f();
+            transformation.mul(bones[boneIndex].transformation, finalTrans);
+            rootInverse.mul(finalTrans, finalTrans);
+            boneFinalTransformation[boneIndex] = finalTrans;
         }
 
         for (Node child : node.children) {
@@ -130,8 +134,8 @@ public class Model {
     }
 
     private Matrix4f calculateMatrix(Animation.NodeChannel channel, double tick) {
-        Vector3f animatedPosition, animatedScale;
-        Quaternionf animatedRotation;
+        Vector3f animatedPosition = new Vector3f(), animatedScale = new Vector3f();
+        Quaternionf animatedRotation = new Quaternionf();
 
         if (channel.getPositionKeys().length > 1) {
             int positionKey = getKeyFrameIndex(tick, channel.getPositionKeys());
@@ -140,7 +144,7 @@ public class Model {
             Animation.KeyValue<Vector3f> nextPosition = channel.getPositionKeys()[positionKey + 1];
 
             double positionInterpolation = getInterpolation(position, nextPosition, tick);
-            animatedPosition = position.getValue().lerp(nextPosition.getValue(), (float) positionInterpolation);
+            position.getValue().lerp(nextPosition.getValue(), (float) positionInterpolation, animatedPosition);
         } else {
             animatedPosition = channel.getPositionKeys()[0].getValue();
         }
@@ -152,7 +156,7 @@ public class Model {
             Animation.KeyValue<Quaternionf> nextRotation = channel.getRotationKeys()[rotationKey + 1];
 
             double rotationInterpolation = getInterpolation(rotation, nextRotation, tick);
-            animatedRotation = rotation.getValue().nlerp(rotation.getValue(), (float) rotationInterpolation);
+            rotation.getValue().nlerp(rotation.getValue(), (float) rotationInterpolation, animatedRotation);
         } else {
             animatedRotation = channel.getRotationKeys()[0].getValue();
         }
@@ -160,20 +164,20 @@ public class Model {
         if (channel.getScalingKeys().length > 1) {
             int scaleKey = getKeyFrameIndex(tick, channel.getScalingKeys());
 
-            Animation.KeyValue<Vector3f> scale = channel.getPositionKeys()[scaleKey];
+            Animation.KeyValue<Vector3f> scale = channel.getScalingKeys()[scaleKey];
             Animation.KeyValue<Vector3f> nextScale = channel.getScalingKeys()[scaleKey + 1];
 
             double scaleInterpolation = getInterpolation(scale, nextScale, tick);
-            animatedScale = scale.getValue().lerp(nextScale.getValue(), (float) scaleInterpolation);
+            scale.getValue().lerp(nextScale.getValue(), (float) scaleInterpolation, animatedScale);
         } else {
             animatedScale = channel.getScalingKeys()[0].getValue();
         }
 
-        Matrix4f result = new Matrix4f();
-        result.scale(animatedScale);
-        result.rotate(animatedRotation);
-        result.transformPosition(animatedPosition);
-        return result;
+        Matrix4f transform = new Matrix4f().translate(animatedPosition);
+        Matrix4f scale = new Matrix4f().scale(animatedScale);
+        Matrix4f rotation = new Matrix4f().rotation(animatedRotation);
+
+        return transform.mul(rotation.mul(scale));
     }
 
     private double getInterpolation(Animation.KeyValue current, Animation.KeyValue next, double tick) {

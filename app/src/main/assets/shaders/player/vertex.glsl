@@ -17,16 +17,15 @@ out vec3 outNormal;
 out vec2 texCoord;
 
 void main() {
-    vec4 position = vec4(vertexPos, 1.0);
-
-    mat4 boneTransform;
-    for (int i = 0; i < 4; i++) {
+    mat4 boneTransform = bones[boneIds[0]] * weights[0];
+    for (int i = 1; i < 4; i++) {
         boneTransform += bones[boneIds[i]] * weights[i];
     }
 
-    gl_Position = cameraProjection * model * boneTransform * position;
+    vec4 position = model * boneTransform * vec4(vertexPos, 1.0);
+    gl_Position = cameraProjection * position;
 
-    outNormal = normalize((inverse(transpose(model)) * vec4(normal, 0.f)).xyz); // mul on cpu
+    outNormal = normalize((inverse(transpose(model)) * boneTransform * vec4(normal, 0.f)).xyz); // mul on cpu
     texCoord = inTexCoord;
     pos = vertexPos;
 }
