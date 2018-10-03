@@ -13,12 +13,12 @@ out vec4 finalColor;
 uniform sampler2D tex;
 
 vec4 calcLight(vec3 color) {
-    float lightPower = 700.f;
+    float lightPower = 650.f;
 
     vec3 posToLight = light.xyz - pos;
     float distanceToLight = length(posToLight);
 
-    vec3 ambient = color * 0.2f;
+    vec3 ambient = color * 0.33f;
     vec3 diffuse = color * max((dot(normalize(posToLight), normal)), 0.f) * max(lightPower / (distanceToLight * distanceToLight), 0.f);
 
     return vec4(diffuse + ambient, 1.f);

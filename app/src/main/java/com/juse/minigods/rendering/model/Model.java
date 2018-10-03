@@ -1,7 +1,5 @@
 package com.juse.minigods.rendering.model;
 
-import android.util.Log;
-
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -101,9 +99,13 @@ public class Model {
         }
     }
 
-    public void updateBoneTransformations(Animation animation, double time) {
+    public void updateBoneTransformations(Animation animation, double time, boolean loop) {
         double tick = (animation.getTicksPerSeconds() * time);
-        tick %= animation.getDuration();
+        if (!loop && tick > animation.getDuration()) {
+            tick = animation.getDuration() - 0.001;
+        } else {
+            tick %= animation.getDuration();
+        }
 
         updateNodeHierarchy(animation, rootNode, new Matrix4f(), tick);
     }
@@ -137,43 +139,26 @@ public class Model {
     }
 
     private Matrix4f calculateMatrix(Animation.NodeChannel channel, double tick) {
-        Vector3f animatedPosition = new Vector3f(), animatedScale = new Vector3f();
         Quaternionf animatedRotation = new Quaternionf();
 
-        if (channel.getPositionKeys().length > 1) {
-            int positionKey = getKeyFrameIndex(tick, channel.getPositionKeys());
+        Vector3f animatedPosition = getAnimatedValue(channel.getPositionKeys(), tick);
+        Vector3f animatedScale = getAnimatedValue(channel.getScalingKeys(), tick);
 
-            Animation.KeyValue<Vector3f> position = channel.getPositionKeys()[positionKey];
-            Animation.KeyValue<Vector3f> nextPosition = channel.getPositionKeys()[positionKey + 1];
-
-            double positionInterpolation = getInterpolation(position, nextPosition, tick);
-            position.getValue().lerp(nextPosition.getValue(), (float) positionInterpolation, animatedPosition);
-        } else {
-            animatedPosition = channel.getPositionKeys()[0].getValue();
-        }
-
+        Animation.KeyValue<Quaternionf>[] rotationKeys = channel.getRotationKeys();
         if (channel.getRotationKeys().length > 1) {
-            int rotationKey = getKeyFrameIndex(tick, channel.getRotationKeys());
+            int rotationKey = getKeyFrameIndex(tick, rotationKeys);
 
-            Animation.KeyValue<Quaternionf> rotation = channel.getRotationKeys()[rotationKey];
-            Animation.KeyValue<Quaternionf> nextRotation = channel.getRotationKeys()[rotationKey + 1];
+            if (rotationKey == rotationKeys.length - 1) { // this is probably a bad solution, with extra if check
+                animatedRotation = rotationKeys[rotationKey].getValue();
+            } else {
+                Animation.KeyValue<Quaternionf> rotation = rotationKeys[rotationKey];
+                Animation.KeyValue<Quaternionf> nextRotation = rotationKeys[rotationKey + 1];
 
-            double rotationInterpolation = getInterpolation(rotation, nextRotation, tick);
-            rotation.getValue().nlerp(rotation.getValue(), (float) rotationInterpolation, animatedRotation);
+                double rotationInterpolation = getInterpolation(rotation, nextRotation, tick);
+                rotation.getValue().nlerp(rotation.getValue(), (float) rotationInterpolation, animatedRotation);
+            }
         } else {
-            animatedRotation = channel.getRotationKeys()[0].getValue();
-        }
-
-        if (channel.getScalingKeys().length > 1) {
-            int scaleKey = getKeyFrameIndex(tick, channel.getScalingKeys());
-
-            Animation.KeyValue<Vector3f> scale = channel.getScalingKeys()[scaleKey];
-            Animation.KeyValue<Vector3f> nextScale = channel.getScalingKeys()[scaleKey + 1];
-
-            double scaleInterpolation = getInterpolation(scale, nextScale, tick);
-            scale.getValue().lerp(nextScale.getValue(), (float) scaleInterpolation, animatedScale);
-        } else {
-            animatedScale = channel.getScalingKeys()[0].getValue();
+            animatedRotation = rotationKeys[0].getValue();
         }
 
         Matrix4f transform = new Matrix4f().translate(animatedPosition);
@@ -181,6 +166,27 @@ public class Model {
         Matrix4f rotation = new Matrix4f().rotation(animatedRotation);
 
         return transform.mul(rotation.mul(scale));
+    }
+
+    private Vector3f getAnimatedValue(Animation.KeyValue<Vector3f>[] keyFrames, double tick) {
+        Vector3f animatedKeyFrameValue = new Vector3f();
+        if (keyFrames.length > 1) {
+            int key = getKeyFrameIndex(tick, keyFrames);
+
+            if (key == keyFrames.length - 1) {
+                animatedKeyFrameValue = keyFrames[key].getValue();
+            } else {
+                Animation.KeyValue<Vector3f> currentFrame = keyFrames[key];
+                Animation.KeyValue<Vector3f> nextFrame = keyFrames[key + 1];
+
+                double scaleInterpolation = getInterpolation(currentFrame, nextFrame, tick);
+
+                currentFrame.getValue().lerp(nextFrame.getValue(), (float) scaleInterpolation, animatedKeyFrameValue);
+            }
+        } else {
+            animatedKeyFrameValue = keyFrames[0].getValue();
+        }
+        return animatedKeyFrameValue;
     }
 
     private double getInterpolation(Animation.KeyValue current, Animation.KeyValue next, double tick) {
@@ -197,7 +203,7 @@ public class Model {
             }
         }
 
-        throw new InvalidParameterException("Invalid tick " + tick);
+        return values.length - 1;
     }
 
     public int getAnimationIndex(String name) {

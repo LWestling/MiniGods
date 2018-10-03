@@ -62,7 +62,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         app:adSize="BANNER"
-        app:adUnitId="0"
+        app:adUnitId="ca-app-pub-3628038149266927/9675391571"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

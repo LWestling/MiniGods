@@ -5,6 +5,7 @@ import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.view.MotionEvent;
 
+import com.juse.minigods.Utils.AudioManager;
 import com.juse.minigods.game.Game;
 import com.juse.minigods.game.Highscore;
 import com.juse.minigods.map.Map;
@@ -66,8 +67,17 @@ public class MainActivity extends Activity {
         highscore.overwriteHighscore(getApplicationContext(), game.getHighscore());
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        game.stop();
+    }
+
     private void setupGame() {
-        game = new Game();
+        AudioManager audioManager = new AudioManager(this);
+        audioManager.playMusic(this, AudioManager.Music.MAIN_MUSIC, true);
+        game = new Game(audioManager);
     }
 
     private void setupGameRenderer() {
@@ -97,20 +107,11 @@ public class MainActivity extends Activity {
         switch (e.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 game.pressDown(x, y);
-                // lastPos = new Vector2f(x, y);
                 break;
             case MotionEvent.ACTION_MOVE:
-                /*
-                lookAlong.add(new Vector2f(x, y).sub(lastPos).mul(0.004f));
-
-                Matrix3f lookRotation = new Matrix3f().rotationXYZ(-lookAlong.y(), -lookAlong.x(), 0.f);
-                game.updateCamera(Game.CAMERA_START_POS, new Vector3f(lookDirection).mul(lookRotation));
-
-                lastPos = new Vector2f(x, y); */
                 break;
             case MotionEvent.ACTION_UP:
                 game.pressUp(x, y);
-                // MaterialManager.updateCamera(new Vector3f(0.f, 0.1f, 3.f), new Vector3f(0.f, -0.33f, -1.f).normalize());
                 break;
         }
 

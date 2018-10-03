@@ -11,4 +11,10 @@
     <string name="main_title">MINI DOGS</string>
     <string name="main_play">PLAY</string>
     <string name="main_about">ABOUT</string>
+    <string name="privacy">https://lwestling.github.io/minidogs_privacy_policy.html</string>
+
+    <string name="about_text">
+        <a href="https://lwestling.github.io/minidogs_privacy_policy.html">PRIVACY POLICY</a>\n\nPRESS TO MOVE THE DOG UP,\nAND RELEASE TO MOVE HIM DOWN.\n\nDODGE THE TREES!
+    </string>
+    <string name="about_back">BACK TO MAIN MENU</string>
 </resources>

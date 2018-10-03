@@ -63,7 +63,7 @@ public class AnimatedModelMaterial {
         }
         buffer = byteBuffer.flip();
 
-        model.updateBoneTransformations(model.animations[currentAnimation], 0.0f);
+        model.updateBoneTransformations(model.animations[currentAnimation], 0.0f, true);
         uniforms[0] = new Uniform();
         uniforms[0].buffer = DataUtils.ToBuffer(model.boneFinalTransformation);
         uniforms[0].location = info.boneUniformLocation;
@@ -130,7 +130,7 @@ public class AnimatedModelMaterial {
     }
 
     public void update() {
-        update(model.animations[currentAnimation]);
+        update(model.animations[currentAnimation], true);
     }
 
     public void setAnimationSpeed(float speed) {
@@ -141,8 +141,8 @@ public class AnimatedModelMaterial {
         startTime = System.currentTimeMillis();
     }
 
-    public void update(Animation animation) {
-        model.updateBoneTransformations(animation, ((double) (System.currentTimeMillis() - startTime) / 1000.0) * animationSpeed);
+    public void update(Animation animation, boolean loop) {
+        model.updateBoneTransformations(animation, ((double) (System.currentTimeMillis() - startTime) / 1000.0) * animationSpeed, loop);
         uniforms[0].buffer = DataUtils.ToBuffer(model.boneFinalTransformation);
     }
 

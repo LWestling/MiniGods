@@ -45,21 +45,26 @@ public class PlayerRenderer implements RendererInterface {
     private int renderPass;
 
     private Model playerModel;
-    private Animation playerRunAnimation;
+    private Animation playerRunAnimation, playerDeathAnimation;
 
     private AnimatedModelMaterial animatedModelMaterial;
     private ModelLoader modelLoader;
 
     public PlayerRenderer(Context context,  Player player) {
-        String fileNames[] = {"models/dog/BeagleDefault.fbx", "models/dog/BeagleRun.fbx"};
+        String fileNames[] = {"models/dog/BeagleDefault.fbx", "models/dog/BeagleRun.fbx", "models/dog/BeagleDeath.fbx"};
         Model models[] = new ModelLoader().loadModels(fileNames, context, context.getAssets());
         assert models != null;
 
         playerModel = models[0];
         playerRunAnimation = models[1].animations[models[1].getAnimationIndex("Take 001")];
+        playerDeathAnimation = models[2].animations[models[2].getAnimationIndex("Take 001")];
         animatedModelMaterial = new AnimatedModelMaterial(playerModel,"Take 001");
         animatedModelMaterial.setAnimationSpeed(0.85f);
 
+        player.setObserver(() -> {
+            if (!player.isOutOfBounds())
+                animatedModelMaterial.resetAnimation();
+        });
         this.player = player;
     }
 
@@ -105,6 +110,10 @@ public class PlayerRenderer implements RendererInterface {
             )
         );
 
-        animatedModelMaterial.update(playerRunAnimation);
+        if (player.isDead() && !player.isOutOfBounds()) {
+            animatedModelMaterial.update(playerDeathAnimation, false);
+        } else {
+            animatedModelMaterial.update(playerRunAnimation, true);
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.juse.minigods.game;
 
+import com.juse.minigods.Utils.AudioManager;
 import com.juse.minigods.map.Map;
 import com.juse.minigods.map.Terrain;
 import com.juse.minigods.rendering.CameraProjectionManager;
@@ -39,6 +40,7 @@ public class Game {
     private Player player;
     private GameTimer gameTimer, pauseTimer;
     private UIManager uiManager;
+    private AudioManager audioManager;
     private Random random;
 
     private ConcurrentLinkedQueue<Obstacle> obstacles;
@@ -55,13 +57,14 @@ public class Game {
     private boolean gameOver, startNewGameSession;
     private int highscore;
 
-    public Game() {
+    public Game(AudioManager audioManager) {
         player = new Player(new Vector3f(START_POS));
         gameTimer = new GameTimer();
         pauseTimer = new GameTimer();
         map = new Map(new Vector2f(-18.f, -6.f), new Vector2i(COLUMNS, ROWS));
         random = new Random();
         uiManager = new UIManager();
+        this.audioManager = audioManager;
 
         playerSpeed = PLAYER_START_SPEED;
         playerFallMultiplier = PLAYER_BASE_FALL_MUL;
@@ -77,6 +80,7 @@ public class Game {
         universalLightPosition = new Vector4f(5.f, 25.f, 0.f, 1.f);
         universalLightRotation = new Quaternionf();
 
+        player.reset();
         player.setPosition(new Vector3f(START_POS));
         player.setVelocity(new Vector3f(0.f, 0.f, playerSpeed * playerFallMultiplier));
 
@@ -102,11 +106,17 @@ public class Game {
     public void update(TextCache cache) {
         uiManager.update(cache);
 
+        if (player.isOutOfBounds()) {
+            player.setVelocity(new Vector3f(0.f, -1.f, player.getPosition().z > 0 ? 1 : -1));
+            player.update(0.25f);
+        }
+
         if (isGamePaused()) {
             return;
         }
 
         if (isGameOver()) {
+            // to make him fall down
             if (startNewGameSession) {
                 uiManager.hideOverlayGameover(cache);
                 startGameSession(cache);
@@ -140,8 +150,11 @@ public class Game {
 
     private void updatePlayer(float dt) {
         player.update(dt);
-        if (player.getPosition().z < -player.getRadius() || player.getPosition().z() > ROWS)
+        if (player.getPosition().z < -player.getRadius() || player.getPosition().z() > ROWS + 1) {
             gameOver = true;
+            player.setOutOfBounds(true);
+            player.kill();
+        }
     }
 
     private void updateObstacles(float dt) {
@@ -151,6 +164,8 @@ public class Game {
                 obstacles.remove(); // first tree added will always be first to be removed
             if (player.getTilePosition().distance(obstacle.getTilePosition()) < player.getRadius()) {
                 gameOver = true;
+                player.kill();
+                audioManager.playSound(AudioManager.Sound.HIT_SOUND);
                 return;
             }
         }
@@ -233,5 +248,9 @@ public class Game {
 
     public int getHighscore() {
         return highscore;
+    }
+
+    public void stop() {
+        audioManager.delete();
     }
 }

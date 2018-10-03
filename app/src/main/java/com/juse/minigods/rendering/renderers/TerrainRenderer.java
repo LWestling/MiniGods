@@ -9,7 +9,6 @@ import com.juse.minigods.map.TerrainColumn;
 import com.juse.minigods.rendering.Material.ImageTexture;
 import com.juse.minigods.rendering.Material.Material;
 import com.juse.minigods.rendering.Material.MaterialBuilder;
-import com.juse.minigods.rendering.Material.Vertices;
 import com.juse.minigods.rendering.MaterialManager;
 import com.juse.minigods.rendering.ShaderManager;
 import com.juse.minigods.reporting.CrashManager;
@@ -56,7 +55,7 @@ public class TerrainRenderer implements RendererInterface {
         TerrainColumn[] renderColumns = terrain.getRenderColumns();
         columns = new Material[terrain.getColumnsSize()];
 
-        ImageTexture grass, sand;
+        ImageTexture grass;
         try {
             grass = new ImageTexture(BitmapFactory.decodeStream(assetManager.open(String.format(TEXTURE_PATH, GRASS))));
         } catch (IOException e) {
@@ -99,9 +98,6 @@ public class TerrainRenderer implements RendererInterface {
             try {
                 TerrainColumn[] renderColumns = terrain.getRenderColumns();
                 for (int i = 0; i < columns.length; i++) {
-                    Vertices vertices = columns[i].getVertices();
-
-                    //vertices.updateData(renderColumns[i].getVertexData());
                     columns[i].getUniforms().updateUniform(
                             DataUtils.ToBuffer(new Matrix4f()
                                     .translate(renderColumns[i].getOffset(), 0.f, 0.f)
