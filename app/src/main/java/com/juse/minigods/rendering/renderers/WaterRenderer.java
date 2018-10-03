@@ -47,10 +47,15 @@ public class WaterRenderer implements RendererInterface {
             int offsets[] = {0, Float.BYTES * waterGrid.getVertexData().capacity() / 2};
 
             MaterialBuilder builder = new MaterialBuilder();
-            builder.setVertices(
-                    waterGrid.getVertexData(),
-                    waterGrid.getVertexData().capacity() / 2, GLES31.GL_DYNAMIC_DRAW,
-                    attrSize, attrPos, strides, offsets);
+            waterGrid.getVertexDataUpdateLock().lock();
+            try {
+                builder.setVertices(
+                        waterGrid.getVertexData(),
+                        waterGrid.getVertexData().capacity() / 2, GLES31.GL_DYNAMIC_DRAW,
+                        attrSize, attrPos, strides, offsets);
+            } finally {
+                waterGrid.getVertexDataUpdateLock().unlock();
+            }
             /*
             builder.setIndices(
                     DataUtils.ToBuffer(waterGrid.getIndices().toArray(new Integer[] {})),

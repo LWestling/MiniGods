@@ -19,7 +19,7 @@ vec4 calcLight(vec3 color) {
     vec3 toCamera = normalize(camera.xyz - pos);
     vec3 lightReflection = reflect(-posToLightNor, outNormal);
 
-    vec3 ambient = color * 0.22f;
+    vec3 ambient = color * 0.4f;
     vec3 diffuse = color * max((dot(posToLightNor, outNormal)), 0.f) * max(lightPower / (distanceToLight * distanceToLight), 0.f);
 
     float specular = pow(max(dot(lightReflection, toCamera), 0.f), 200.f);

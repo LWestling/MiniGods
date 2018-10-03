@@ -1,5 +1,7 @@
 package com.juse.minigods.rendering.model;
 
+import android.util.Log;
+
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -120,6 +122,7 @@ public class Model {
             // new matrix since transformation is also sent to children
             Matrix4f finalTrans = new Matrix4f();
             transformation.mul(bones[boneIndex].transformation, finalTrans);
+
             rootInverse.mul(finalTrans, finalTrans);
             boneFinalTransformation[boneIndex] = finalTrans;
         }

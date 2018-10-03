@@ -27,9 +27,10 @@ public class AnimatedModelMaterial {
     private Material material;
     private Model model;
 
-    private float time;
     private int currentAnimation;
 
+    private long startTime;
+    private float animationSpeed;
     private Buffer buffer;
     private int vbo[], vao[];
 
@@ -38,7 +39,10 @@ public class AnimatedModelMaterial {
     public AnimatedModelMaterial(Model model, String animation) {
         this.model = model;
         this.uniforms = new Uniform[2];
+
         currentAnimation = model.getAnimationIndex(animation);
+        startTime = System.currentTimeMillis();
+        animationSpeed = 1.f;
     }
 
     public void buildMaterial(int renderPass, AssetManager assetManager, MaterialBuilder builder, AnimatedShaderInfo info) {
@@ -125,13 +129,20 @@ public class AnimatedModelMaterial {
         currentAnimation = model.getAnimationIndex(animation);
     }
 
-    public void update(float dt) {
-        update(dt, model.animations[currentAnimation]);
+    public void update() {
+        update(model.animations[currentAnimation]);
     }
 
-    public void update(float dt, Animation animation) {
-        time += dt;
-        model.updateBoneTransformations(animation, time);
+    public void setAnimationSpeed(float speed) {
+        animationSpeed = speed;
+    }
+
+    public void resetAnimation() {
+        startTime = System.currentTimeMillis();
+    }
+
+    public void update(Animation animation) {
+        model.updateBoneTransformations(animation, ((double) (System.currentTimeMillis() - startTime) / 1000.0) * animationSpeed);
         uniforms[0].buffer = DataUtils.ToBuffer(model.boneFinalTransformation);
     }
 

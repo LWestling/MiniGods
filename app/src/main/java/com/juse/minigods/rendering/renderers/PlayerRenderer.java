@@ -58,6 +58,7 @@ public class PlayerRenderer implements RendererInterface {
         playerModel = models[0];
         playerRunAnimation = models[1].animations[models[1].getAnimationIndex("Take 001")];
         animatedModelMaterial = new AnimatedModelMaterial(playerModel,"Take 001");
+        animatedModelMaterial.setAnimationSpeed(0.85f);
 
         this.player = player;
     }
@@ -99,11 +100,11 @@ public class PlayerRenderer implements RendererInterface {
             DataUtils.ToBuffer(
                     new Matrix4f()
                             .translate(player.getPosition())
+                            .scale(0.022f)
                             .rotateY(-(float) Math.PI / 2)
-                            .scale(0.03f)
             )
         );
 
-        animatedModelMaterial.update(0.01f, playerRunAnimation);
+        animatedModelMaterial.update(playerRunAnimation);
     }
 }

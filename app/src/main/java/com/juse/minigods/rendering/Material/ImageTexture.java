@@ -4,7 +4,7 @@ import android.graphics.Bitmap;
 import android.opengl.GLES31;
 import android.opengl.GLUtils;
 
-import static android.opengl.GLES20.GL_LINEAR;
+import static android.opengl.GLES20.GL_LINEAR_MIPMAP_LINEAR;
 import static android.opengl.GLES20.glBindTexture;
 import static android.opengl.GLES20.glGenerateMipmap;
 import static android.opengl.GLES31.GL_TEXTURE_2D;
@@ -28,8 +28,8 @@ public class ImageTexture {
 
         glBindTexture(GL_TEXTURE_2D, textureId[0]);
         GLUtils.texImage2D(GL_TEXTURE_2D, 0, bitmap, 0);
-        GLES31.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        GLES31.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        GLES31.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        GLES31.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
         glGenerateMipmap(GL_TEXTURE_2D);
     }

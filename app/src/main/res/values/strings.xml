@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">Mini Dogs</string>
+
+    <string name="game_score">SCORE:\n%d.</string>
+    <string name="game_highscore">HIGHSCORE:\n%d.</string>
+
+    <string name="end_score">SCORE: %d.</string>
+    <string name="end_highscore">NEW HIGHSCORE: %d.</string>
+    <string name="end_continue">PRESS TO PLAY AGAIN!</string>
+
+    <string name="main_title">MINI DOGS</string>
+    <string name="main_play">PLAY</string>
+    <string name="main_about">ABOUT</string>
 </resources>

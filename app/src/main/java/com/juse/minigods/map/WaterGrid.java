@@ -75,6 +75,8 @@ public class WaterGrid {
             }
 
             vertexBuffer.flip();
+        } catch (Exception e) {
+            e.printStackTrace();
         } finally {
             vertexDataUpdateLock.unlock();
         }
