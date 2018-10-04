@@ -14,6 +14,12 @@
     vec.push_back(vec3d.y); \
     vec.push_back(vec3d.z);
 
+#define add4DColComponents(col, vec) \
+    vec.push_back(col.r); \
+    vec.push_back(col.g); \
+    vec.push_back(col.b); \
+    vec.push_back(col.a); \
+
 #define add2DVecComponents(vec3d, vec) \
     vec.push_back(vec3d.x); \
     vec.push_back(vec3d.y);
@@ -85,6 +91,11 @@ Java_com_juse_minigods_rendering_model_ModelLoader_loadModel(JNIEnv *env, jobjec
      *
      * JUST WANT TO GET SOMETHING THAT WORKS
      *
+     * THINGS THAT DO NOT WORK AT ALL
+     * * Multiple texture coord channels
+     * * Multiple color channels
+     * * Multiple meshes
+     * * Embedded Textures
      */
 
     const aiScene *scene = importer->ReadFile(name, aiProcess_Triangulate |
@@ -110,7 +121,7 @@ Java_com_juse_minigods_rendering_model_ModelLoader_loadModel(JNIEnv *env, jobjec
 
     std::vector<jfloat> floatVec;
     if (mesh->HasNormals()) {
-        aiVector3D *normals = scene->mMeshes[0]->mNormals;
+        aiVector3D *normals = mesh->mNormals;
         for (int i = 0; i < mesh->mNumVertices; i++) {
             add3DVecComponents(vec[i], floatVec);
             add3DVecComponents(normals[i], floatVec);
@@ -118,6 +129,8 @@ Java_com_juse_minigods_rendering_model_ModelLoader_loadModel(JNIEnv *env, jobjec
             // only support 1 uv channel and 2 dimensions (TODO ONE IF PER LOOP OMEGALUL)
             if (mesh->HasTextureCoords(0)) {
                 add2DVecComponents(mesh->mTextureCoords[0][i], floatVec);
+            } else if (mesh->HasVertexColors(0)) {
+                add4DColComponents(mesh->mColors[0][i], floatVec);
             }
         }
         setJavaBoolean(env, modelClass, model, (jboolean) true, "useNormals");
@@ -143,7 +156,7 @@ Java_com_juse_minigods_rendering_model_ModelLoader_loadModel(JNIEnv *env, jobjec
                         intVec.data());
     }
 
-     extractAnimatedModel(env, modelClass, model, scene, mesh);
+    extractAnimatedModel(env, modelClass, model, scene, mesh);
 
     env->ReleaseStringUTFChars(fileName, name);
 }

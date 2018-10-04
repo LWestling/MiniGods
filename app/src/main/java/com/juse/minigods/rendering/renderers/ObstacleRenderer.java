@@ -25,6 +25,7 @@ import static android.opengl.GLES20.GL_VERTEX_SHADER;
  */
 
 public class ObstacleRenderer implements RendererInterface {
+    private final static int BASE_SHADER_INDEX = 3;
     private final static String VS = "vertex", FS = "fragment";
     private ConcurrentLinkedQueue<Obstacle> obstacles;
     private int renderPass;
@@ -49,7 +50,7 @@ public class ObstacleRenderer implements RendererInterface {
 
         ObjLoader objLoader = new ObjLoader("tree/lowpolytree");
         MaterialBuilder builder = objLoader.load(assetManager);
-        builder.setUniforms(new int[] {3}, DataUtils.ToBuffer(new Matrix4f().translate(0.f, 0.f, 3.f)));
+        builder.setUniforms(new int[] {BASE_SHADER_INDEX}, DataUtils.ToBuffer(new Matrix4f().translate(0.f, 0.f, 3.f)));
 
         tree = new Material(renderPass, builder);
         materialManager.addMaterial(tree);
@@ -58,11 +59,11 @@ public class ObstacleRenderer implements RendererInterface {
     public void render(ShaderManager shaderManager, MaterialManager materialManager) {
         for (Obstacle obstacle : obstacles) {
             tree.getUniforms().updateUniform(DataUtils.ToBuffer(new Matrix4f().translate(obstacle.getPosition())), 0);
-            materialManager.render(renderPass, 2, 4, 5);
+            materialManager.render(renderPass, BASE_SHADER_INDEX + 1,
+                    BASE_SHADER_INDEX + 2, BASE_SHADER_INDEX + 3);
         }
     }
 
     public void update(MaterialManager materialManager) {
-
     }
 }

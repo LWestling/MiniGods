@@ -13,9 +13,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class ObjLoader {
-    private static final String MODEL_PATH = "models/%s.obj";
+    private static final String MODEL_PATH = "models/%s.obj", MATERIAL_PATH = "models/mat/%s";
     private static final String MTL_LIB = "mtllib", MTL_USE = "usemtl",
             VERTEX = "v", VERTEX_NORMAL = "vn", FACE = "f", SPLIT = " ", FACE_SPLIT = "/";
     private static final int FACE_LEN = 3, UNAVAILABLE = -1;
@@ -25,15 +26,19 @@ public class ObjLoader {
 
     private ArrayList<Vector3f> vertices, normals, texCoords /* NYI */;
     private ArrayList<ArrayList<FacePart>> faces;
+    private HashMap<String, Material> materials;
 
     public ObjLoader(String name) {
         this.name = name;
+        mtl = null;
 
         vertices = new ArrayList<>();
         normals = new ArrayList<>();
         texCoords = new ArrayList<>();
 
         faces = new ArrayList<>();
+
+        materials = new HashMap<>();
     }
 
     public MaterialBuilder load(AssetManager assetManager) {
@@ -42,7 +47,7 @@ public class ObjLoader {
 
             String line;
             while ((line = bufferedReader.readLine()) != null) {
-                applyLine(line);
+                applyLine(line, assetManager);
             }
 
             return buildModelBuilder();
@@ -88,11 +93,12 @@ public class ObjLoader {
             filteredFaceParts.forEach(facePart -> {
                 vertexData.add(vertices.get(facePart.vertexIndex - 1));
                 vertexData.add(normals.get(facePart.normalIndex - 1));
+                vertexData.add(facePart.material.getDiffuse());
             });
 
             builder.setVertices(DataUtils.ToBuffer(toVec3Array(vertexData)), vertexData.size(),
-                    GLES31.GL_STATIC_DRAW, new int[] {3, 3}, new int[] {0, 1},
-                    new int[] {Float.BYTES * 6, Float.BYTES * 6}, new int[] {0, Float.BYTES * 3});
+                    GLES31.GL_STATIC_DRAW, new int[] {3, 3, 3}, new int[] {0, 1, 2},
+                    new int[] {Float.BYTES * 9, Float.BYTES * 9, Float.BYTES * 9}, new int[] {0, Float.BYTES * 3, Float.BYTES * 6});
         } else {
             // if only vertices
             filteredFaceParts.forEach(facePart -> vertexData.add(vertices.get(facePart.vertexIndex)));
@@ -103,12 +109,13 @@ public class ObjLoader {
         return vertices.toArray(new Vector3f[]{});
     }
 
-    private void applyLine(String line) {
+    private void applyLine(String line, AssetManager assetManager) {
         String split[] = line.split(SPLIT);
 
         switch (split[0]) {
             case MTL_LIB:
                 mtlLib = split[1];
+                loadMaterial(mtlLib, assetManager);
                 break;
             case MTL_USE:
                 mtl = split[1];
@@ -126,6 +133,39 @@ public class ObjLoader {
                 }
                 faces.add(faceParts);
                 break;
+        }
+    }
+
+    private void loadMaterial(String mtlLib, AssetManager assetManager) {
+        try(InputStream stream = assetManager.open(String.format(MATERIAL_PATH, mtlLib))) {
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(stream));
+
+            String line;
+            String name = "";
+            Vector3f ambient = null, specular = null, diffuse = null;
+            while ((line = bufferedReader.readLine()) != null) {
+                String split[] = line.split(" ");
+                switch (split[0]) {
+                    case "newmtl":
+                        if (!name.isEmpty())
+                            materials.put(name, new Material(ambient, diffuse, specular));
+                        name = split[1];
+                        break;
+                    case "Kd":
+                        diffuse = toVec3(split, 1);
+                        break;
+                    case "Ka":
+                        ambient = toVec3(split, 1);
+                        break;
+                    case "Ks":
+                        specular = toVec3(split, 1);
+                        break;
+                }
+            }
+
+            materials.put(name, new Material(ambient, diffuse, specular));
+        } catch (IOException e) {
+            CrashManager.ReportCrash(CrashManager.CrashType.IO, "Error loading file" + name, e);
         }
     }
 
@@ -150,8 +190,10 @@ public class ObjLoader {
                 }
             }
         }
-        
-        return new FacePart(vertex, tex, normal);
+
+        FacePart part = new FacePart(vertex, tex, normal);
+        part.material = materials.get(mtl);
+        return part;
     }
 
     private Vector3f toVec3(String[] split, int offset) {
@@ -163,6 +205,7 @@ public class ObjLoader {
     }
 
     private class FacePart {
+        public Material material;
         public int vertexIndex, texIndex, normalIndex;
         public FacePart(int vertexIndex, int texIndex, int normalIndex) {
             this.vertexIndex = vertexIndex;
@@ -177,6 +220,28 @@ public class ObjLoader {
             this.vertex = vertex;
             this.texCoord = texCoord;
             this.normal = normal;
+        }
+    }
+
+    private class Material {
+        private Vector3f ambient, diffuse, specular;
+
+        public Material(Vector3f ambient, Vector3f diffuse, Vector3f specular) {
+            this.ambient = ambient;
+            this.diffuse = diffuse;
+            this.specular = specular;
+        }
+
+        public Vector3f getAmbient() {
+            return ambient;
+        }
+
+        public Vector3f getDiffuse() {
+            return diffuse;
+        }
+
+        public Vector3f getSpecular() {
+            return specular;
         }
     }
 }

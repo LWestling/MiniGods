@@ -14,7 +14,14 @@
     <string name="privacy">https://lwestling.github.io/minidogs_privacy_policy.html</string>
 
     <string name="about_text">
-        <a href="https://lwestling.github.io/minidogs_privacy_policy.html">PRIVACY POLICY</a>\n\nPRESS TO MOVE THE DOG UP,\nAND RELEASE TO MOVE HIM DOWN.\n\nDODGE THE TREES!
+        <a href="https://lwestling.github.io/minidogs_privacy_policy.html">PRIVACY POLICY</a>
+        \n\nPRESS TO MOVE THE DOG UP,\nAND RELEASE TO MOVE HIM DOWN.\n\n
+        DODGE THE TREES!\n\n
+        Music: Eric Skiff - Jumpshot - Resistor Anthems -
+        <a href="http://EricSkiff.com/music">Available Here</a>
+        \n\nHit sound by: LittleRobotSoundFactory -
+        <a href="https://freesound.org/people/LittleRobotSoundFactory/sounds/270325/">Available Here</a>
+        \n\nTree - <a href="https://opengameart.org/content/low-poly-tree-1">Available Here</a>
     </string>
     <string name="about_back">BACK TO MAIN MENU</string>
 </resources>
