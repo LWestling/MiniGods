@@ -6,8 +6,8 @@ android {
         applicationId "com.juse.minigods"
         minSdkVersion 24
         targetSdkVersion 28
-        versionCode 5
-        versionName "0.5"
+        versionCode 7
+        versionName "0.7"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
         externalNativeBuild {
@@ -60,6 +60,8 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    implementation 'com.google.android.gms:play-services-games:15.0.1'
+    implementation 'com.google.android.gms:play-services-auth:16.0.0'
     implementation 'com.google.android.gms:play-services-ads:15.0.1'
     implementation 'com.google.android.ads.consent:consent-library:1.0.6'
 }

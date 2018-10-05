@@ -34,6 +34,7 @@
 
 static Assimp::AndroidJNIIOSystem *androidJNIIOSystem = nullptr;
 static Assimp::Importer *importer = nullptr;
+static jclass matrixClass, quaternionClass, vectorClass, stringClass;
 
 extern "C"
 JNIEXPORT void JNICALL
@@ -59,24 +60,29 @@ void setJavaIntArray(JNIEnv *env, jclass c, jobject obj, const char *name, int v
 void setJavaStringArray(JNIEnv *env, jclass c, jobject obj, const char *name, int valueLen, const char **values);
 void setJavaObjectArray(JNIEnv *env, jclass c, jobject obj, const char *objectClass, const char *name, unsigned long valueLen, jobject *values);
 void setJavaBoolean(JNIEnv *env, jclass c, jobject obj, jboolean val, const char *name);
-jobject createJavaBone(JNIEnv *pEnv, aiBone *bone);
-void extractAnimatedModel(JNIEnv *pEnv, jclass pJclass, jobject pJobject, const aiScene *pScene, const aiMesh *mesh);
+jobject createJavaBone(JNIEnv *pEnv, aiBone *bone, jclass boneClass, jclass vertexWeightClass);
+void extractAnimatedModel(JNIEnv *pEnv, jclass pJclass, jobject pJobject, const aiScene *pScene);
 void setIntField(JNIEnv *pEnv, jclass pJclass, jobject pJobject, unsigned int weights, const char string[11]);
 void setStringField(JNIEnv *pEnv, jclass pJclass, jobject pJobject, const char *value, const char *name);
 void setMatrix(JNIEnv *pEnv, jclass pJclass, jobject pJobject, aiMatrix4x4 const &mat, const char *name);
-void setVertexWeights(JNIEnv *pEnv, jclass pJclass, jobject pJobject, int numWeights, aiVertexWeight *pWeight, const char *name);
+void setVertexWeights(JNIEnv *pEnv, jclass pJclass, jobject pJobject, int numWeights, aiVertexWeight *pWeight, const char *name, jclass vertexWeightClass);
 void extractAnimations(JNIEnv *pEnv, jclass pJclass, jobject pJobject, size_t pNumAnimations, aiAnimation **pAnimation);
 jobject createAnimation(JNIEnv *pEnv, aiAnimation *pAnimation, jclass animClass, jclass jNodeClass);
 jobject extractNode(JNIEnv *pEnv, jobject parent, aiNode *pNode, jclass pNodeClass);
 jobjectArray createJavaObjectArray(JNIEnv *pEnv, jclass pJclass, unsigned long len, jobject *pJobject);
 jobject
-createNodeChannel(JNIEnv *pEnv, aiNodeAnim *pAnim, jmethodID pID, jclass pJclass, jobject animationObject);
+createNodeChannel(JNIEnv *pEnv, aiNodeAnim *pAnim, jmethodID pID, jclass pJclass,
+                  jobject animationObject, jclass pJclass1, jmethodID pJmethodID);
 jobject createQuaternion(JNIEnv *pEnv, aiQuaternion const &quat);
 jobject createVec3(JNIEnv *pEnv, aiVector3D const &quat);
 void clearJArray(JNIEnv *pEnv, std::vector<jobject> vector);
 template <class T>
 jobject createKeyVal(JNIEnv *pEnv, jclass pJclass, jmethodID pID, T key, jobject value,
                      jobject animationObject);
+
+void extractMaterial(JNIEnv *pEnv, jclass pJclass, jobject pJobject, const aiScene *pScene);
+void extractVertices(JNIEnv *pEnv, jclass pJclass, jobject pJobject, const aiScene *pScene);
+void extractFaces(JNIEnv *pEnv, jclass pJclass, jobject pJobject, const aiScene *pScene);
 
 extern "C"
 JNIEXPORT void JNICALL
@@ -98,26 +104,43 @@ Java_com_juse_minigods_rendering_model_ModelLoader_loadModel(JNIEnv *env, jobjec
      * * Embedded Textures
      */
 
-    const aiScene *scene = importer->ReadFile(name, aiProcess_Triangulate |
-                                                    aiProcess_ConvertToLeftHanded);
+    const aiScene *scene = importer->ReadFile(name, aiProcess_Triangulate | aiProcess_ConvertToLeftHanded);
+    env->ReleaseStringUTFChars(fileName, name);
 
-    aiMesh *mesh = scene->mMeshes[0]; // only supports 1 mesh atm
-    aiVector3D *vec = scene->mMeshes[0]->mVertices;
+    matrixClass = env->FindClass("org/joml/Matrix4f");
+    quaternionClass = env->FindClass("org/joml/Quaternionf");
+    vectorClass = env->FindClass("org/joml/Vector3f");
+    stringClass = env->FindClass("java/lang/String");
 
-    if (mesh->HasNormals() && scene->HasMaterials()) {
-        aiMaterial *material = scene->mMaterials[0]; // only supports 1 material atm
+    extractMaterial(env, modelClass, model, scene);
+    extractVertices(env, modelClass, model, scene);
+    extractFaces(env, modelClass, model, scene);
+    extractAnimatedModel(env, modelClass, model, scene);
 
-        int textureCount = material->GetTextureCount(aiTextureType_DIFFUSE);
-        std::vector<const char *> textures;
-        for (unsigned int i = 0; i < textureCount; i++) {
-            aiString path;
-            if (material->GetTexture(aiTextureType_DIFFUSE, i, &path) == aiReturn_SUCCESS) {
-                textures.push_back(path.C_Str());
-            }
+    env->DeleteLocalRef(matrixClass);
+    env->DeleteLocalRef(quaternionClass);
+    env->DeleteLocalRef(vectorClass);
+    env->DeleteLocalRef(stringClass);
+}
+
+void extractFaces(JNIEnv *pEnv, jclass pJclass, jobject pJobject, const aiScene *pScene) {
+    aiMesh *mesh = pScene->mMeshes[0]; // only supports 1 mesh atm
+
+    if (mesh->HasFaces()) {
+        std::vector<jint> intVec;
+        for (int i = 0; i < mesh->mNumFaces; i++) {
+            aiFace face = mesh->mFaces[i];
+            for (int j = 0; j < face.mNumIndices; j++)
+                intVec.push_back(face.mIndices[j]);
         }
-
-        setJavaStringArray(env, modelClass, model, "textures", textureCount, textures.data());
+        setJavaIntArray(pEnv, pJclass, pJobject, "indices", static_cast<int>(intVec.size()),
+                        intVec.data());
     }
+}
+
+void extractVertices(JNIEnv *pEnv, jclass pJclass, jobject pJobject, const aiScene *pScene) {
+    aiVector3D *vec = pScene->mMeshes[0]->mVertices;
+    aiMesh *mesh = pScene->mMeshes[0]; // only supports 1 mesh atm
 
     std::vector<jfloat> floatVec;
     if (mesh->HasNormals()) {
@@ -133,36 +156,40 @@ Java_com_juse_minigods_rendering_model_ModelLoader_loadModel(JNIEnv *env, jobjec
                 add4DColComponents(mesh->mColors[0][i], floatVec);
             }
         }
-        setJavaBoolean(env, modelClass, model, (jboolean) true, "useNormals");
+        setJavaBoolean(pEnv, pJclass, pJobject, (jboolean) true, "useNormals");
     } else {
         for (int i = 0; i < mesh->mNumVertices; i++) {
             add3DVecComponents(vec[i], floatVec);
         }
-        setJavaBoolean(env, modelClass, model, (jboolean) false, "useNormals");
+        setJavaBoolean(pEnv, pJclass, pJobject, (jboolean) false, "useNormals");
     }
 
-    setJavaFloatArray(env, modelClass, model, "vertices", static_cast<int>(floatVec.size()),
+    setJavaFloatArray(pEnv, pJclass, pJobject, "vertices", static_cast<int>(floatVec.size()),
                       floatVec.data());
     floatVec.clear();
-
-    if (mesh->HasFaces()) {
-        std::vector<jint> intVec;
-        for (int i = 0; i < mesh->mNumFaces; i++) {
-            aiFace face = mesh->mFaces[i];
-            for (int j = 0; j < face.mNumIndices; j++)
-                intVec.push_back(face.mIndices[j]);
-        }
-        setJavaIntArray(env, modelClass, model, "indices", static_cast<int>(intVec.size()),
-                        intVec.data());
-    }
-
-    extractAnimatedModel(env, modelClass, model, scene, mesh);
-
-    env->ReleaseStringUTFChars(fileName, name);
 }
 
-void extractAnimatedModel(JNIEnv *pEnv, jclass pJclass, jobject pJobject, const aiScene *pScene,
-                          const aiMesh *mesh) {
+void extractMaterial(JNIEnv *pEnv, jclass pJclass, jobject pJobject, const aiScene *pScene) {
+    aiMesh *mesh = pScene->mMeshes[0]; // only supports 1 mesh atm
+
+    if (mesh->HasNormals() && pScene->HasMaterials()) {
+        aiMaterial *material = pScene->mMaterials[0]; // only supports 1 material atm
+
+        int textureCount = material->GetTextureCount(aiTextureType_DIFFUSE);
+        std::vector<const char *> textures;
+        for (unsigned int i = 0; i < textureCount; i++) {
+            aiString path;
+            if (material->GetTexture(aiTextureType_DIFFUSE, i, &path) == aiReturn_SUCCESS) {
+                textures.push_back(path.C_Str());
+            }
+        }
+
+        setJavaStringArray(pEnv, pJclass, pJobject, "textures", textureCount, textures.data());
+    }
+}
+
+void extractAnimatedModel(JNIEnv *pEnv, jclass pJclass, jobject pJobject, const aiScene *pScene) {
+    const aiMesh *mesh = pScene->mMeshes[0];
     // if the scene doesn't have animations, we don't need bones and vise-versa
     if (!pScene->HasAnimations() || !mesh->HasBones()) {
         setJavaBoolean(pEnv, pJclass, pJobject, (jboolean) false, "useAnimations");
@@ -172,10 +199,17 @@ void extractAnimatedModel(JNIEnv *pEnv, jclass pJclass, jobject pJobject, const 
     setJavaBoolean(pEnv, pJclass, pJobject, (jboolean) true, "useAnimations");
 
     std::vector<jobject> bones;
+
+    jclass boneClass = pEnv->FindClass(MODEL_DIR_PATH "Bone");
+    jclass vertexWeightClass = pEnv->FindClass(MODEL_DIR_PATH "VertexWeight");
+
     for (int boneIndex = 0; boneIndex < mesh->mNumBones; boneIndex++) {
         aiBone *bone = mesh->mBones[boneIndex];
-        bones.push_back(createJavaBone(pEnv, bone));
+        bones.push_back(createJavaBone(pEnv, bone, boneClass, vertexWeightClass));
     }
+
+    pEnv->DeleteLocalRef(boneClass);
+    pEnv->DeleteLocalRef(vertexWeightClass);
 
     jobjectArray array = createJavaObjectArray(pEnv, pEnv->FindClass(MODEL_DIR_PATH "Bone"), bones.size(), bones.data());
     jmethodID methodId = pEnv->GetMethodID(pJclass, "setBones", "(" SIG_ARR(MODEL_DIR_PATH "Bone") ")V");
@@ -241,13 +275,18 @@ jobject createAnimation(JNIEnv *pEnv, aiAnimation *pAnimation, jclass animClass,
                                              "(" SIG(ANIM_CLASS) SIG("java/lang/String") "II"
                                                      KEY_VAL_SIG KEY_VAL_SIG KEY_VAL_SIG ")V");
 
+    jclass keyClass = pEnv->FindClass(ANIM_CLASS "$KeyValue");
+    jmethodID keyInit = pEnv->GetMethodID(keyClass, "<init>", "(" SIG(ANIM_CLASS) SIG("java/lang/Object") "D)V");
     std::vector<jobject> nodeChannels;
+
     for (int nodeChannelIndex = 0; nodeChannelIndex < pAnimation->mNumChannels; nodeChannelIndex++) {
         nodeChannels.push_back(
                 createNodeChannel(pEnv, pAnimation->mChannels[nodeChannelIndex], nodeMethod,
-                                  nodeChannelClass, animationObject)
+                                  nodeChannelClass, animationObject, keyClass, keyInit)
         );
     }
+
+    pEnv->DeleteLocalRef(keyClass);
 
     // set node channels
     jobjectArray jNodeChannels = createJavaObjectArray(pEnv, nodeChannelClass, nodeChannels.size(), nodeChannels.data());
@@ -260,12 +299,11 @@ jobject createAnimation(JNIEnv *pEnv, aiAnimation *pAnimation, jclass animClass,
     return pEnv->NewGlobalRef(animationObject);
 }
 
-jobject createNodeChannel(JNIEnv *pEnv, aiNodeAnim *pAnim, jmethodID pID, jclass pJclass, jobject animationObject) {
+jobject createNodeChannel(JNIEnv *pEnv, aiNodeAnim *pAnim, jmethodID pID, jclass pJclass,
+                          jobject animationObject, jclass keyClass, jmethodID keyInit) {
     jobjectArray translations, rotations, scalings;
     std::vector<jobject> translationObjects, rotationObjects, scalingObjects;
 
-    jclass keyClass = pEnv->FindClass(ANIM_CLASS "$KeyValue");
-    jmethodID keyInit = pEnv->GetMethodID(keyClass, "<init>", "(" SIG(ANIM_CLASS) SIG("java/lang/Object") "D)V");
 
     for (int i = 0; i < pAnim->mNumPositionKeys; i++) {
         jobject jVec = createVec3(pEnv, pAnim->mPositionKeys[i].mValue);
@@ -274,6 +312,10 @@ jobject createNodeChannel(JNIEnv *pEnv, aiNodeAnim *pAnim, jmethodID pID, jclass
                                           pAnim->mPositionKeys[i], jVec, animationObject));
         pEnv->DeleteGlobalRef(jVec);
     }
+
+    translations = createJavaObjectArray(pEnv, keyClass, translationObjects.size(), translationObjects.data());
+    clearJArray(pEnv, translationObjects);
+
     for (int i = 0; i < pAnim->mNumRotationKeys; i++) {
         jobject jQuat = createQuaternion(pEnv, pAnim->mRotationKeys[i].mValue);
         rotationObjects.push_back(
@@ -281,6 +323,10 @@ jobject createNodeChannel(JNIEnv *pEnv, aiNodeAnim *pAnim, jmethodID pID, jclass
                                         pAnim->mRotationKeys[i], jQuat, animationObject));
         pEnv->DeleteGlobalRef(jQuat);
     }
+
+    rotations = createJavaObjectArray(pEnv, keyClass, rotationObjects.size(), rotationObjects.data());
+    clearJArray(pEnv, rotationObjects);
+
     for (int i = 0; i < pAnim->mNumScalingKeys; i++) {
         jobject jVec = createVec3(pEnv, pAnim->mScalingKeys[i].mValue);
         scalingObjects.push_back(
@@ -288,12 +334,6 @@ jobject createNodeChannel(JNIEnv *pEnv, aiNodeAnim *pAnim, jmethodID pID, jclass
                                           pAnim->mScalingKeys[i], jVec, animationObject));
         pEnv->DeleteGlobalRef(jVec);
     }
-
-    translations = createJavaObjectArray(pEnv, keyClass, translationObjects.size(), translationObjects.data());
-    clearJArray(pEnv, translationObjects);
-
-    rotations = createJavaObjectArray(pEnv, keyClass, rotationObjects.size(), rotationObjects.data());
-    clearJArray(pEnv, rotationObjects);
 
     scalings = createJavaObjectArray(pEnv, keyClass, scalingObjects.size(), scalingObjects.data());
     clearJArray(pEnv, scalingObjects);
@@ -319,27 +359,25 @@ void clearJArray(JNIEnv *pEnv, std::vector<jobject> vector) {
     }
 }
 
-jobject createJavaBone(JNIEnv *pEnv, aiBone *bone) {
-    jclass boneClass = pEnv->FindClass(MODEL_DIR_PATH "Bone");
+jobject createJavaBone(JNIEnv *pEnv, aiBone *bone, jclass boneClass, jclass vertexWeightClass) {
     jobject boneObject = pEnv->NewGlobalRef(pEnv->AllocObject(boneClass));
 
     setStringField(pEnv, boneClass, boneObject, bone->mName.C_Str(), "name");
 
     setMatrix(pEnv, boneClass, boneObject, bone->mOffsetMatrix, "transformation");
     setVertexWeights(pEnv, boneClass, boneObject, bone->mNumWeights, bone->mWeights,
-                     "vertexWeights");
+                     "vertexWeights", vertexWeightClass);
 
     return boneObject;
 }
 
 void setVertexWeights(JNIEnv *pEnv, jclass pJclass, jobject pJobject, int numWeights,
-                      aiVertexWeight *pWeight, const char *name) {
+                      aiVertexWeight *pWeight, const char *name, jclass vertexWeightClass) {
     std::vector<jobject> weights;
-    jclass weightClass = pEnv->FindClass(MODEL_DIR_PATH "VertexWeight");
     for (int weightIndex = 0; weightIndex < numWeights; weightIndex++) {
-        jobject weightObject = pEnv->NewGlobalRef(pEnv->AllocObject(weightClass));
-        setIntField(pEnv, weightClass, weightObject, pWeight[weightIndex].mVertexId, "vertexId");
-        setFloatField(pEnv, weightClass, weightObject, pWeight[weightIndex].mWeight, "weight");
+        jobject weightObject = pEnv->NewGlobalRef(pEnv->AllocObject(vertexWeightClass));
+        setIntField(pEnv, vertexWeightClass, weightObject, pWeight[weightIndex].mVertexId, "vertexId");
+        setFloatField(pEnv, vertexWeightClass, weightObject, pWeight[weightIndex].mWeight, "weight");
         weights.push_back(weightObject);
     }
 
@@ -350,7 +388,6 @@ void setVertexWeights(JNIEnv *pEnv, jclass pJclass, jobject pJobject, int numWei
 
 void setMatrix(JNIEnv *pEnv, jclass pJclass, jobject pJobject, aiMatrix4x4 const &mat,
                const char *name) {
-    jclass matrixClass = pEnv->FindClass("org/joml/Matrix4f");
     jmethodID constructor = pEnv->GetMethodID(matrixClass, "<init>", "(FFFFFFFFFFFFFFFF)V");
     jobject matrix = pEnv->NewObject(
             matrixClass, constructor,
@@ -365,7 +402,6 @@ void setMatrix(JNIEnv *pEnv, jclass pJclass, jobject pJobject, aiMatrix4x4 const
 }
 
 jobject createQuaternion(JNIEnv *pEnv, aiQuaternion const &quat) {
-    jclass quaternionClass = pEnv->FindClass("org/joml/Quaternionf");
     jmethodID constructor = pEnv->GetMethodID(quaternionClass, "<init>", "(FFFF)V");
     jobject matrix = pEnv->NewObject(
             quaternionClass, constructor,
@@ -376,10 +412,9 @@ jobject createQuaternion(JNIEnv *pEnv, aiQuaternion const &quat) {
 }
 
 jobject createVec3(JNIEnv *pEnv, aiVector3D const &vec) {
-    jclass quaternionClass = pEnv->FindClass("org/joml/Vector3f");
-    jmethodID constructor = pEnv->GetMethodID(quaternionClass, "<init>", "(FFF)V");
+    jmethodID constructor = pEnv->GetMethodID(vectorClass, "<init>", "(FFF)V");
     jobject matrix = pEnv->NewObject(
-            quaternionClass, constructor,
+            vectorClass, constructor,
             vec.x, vec.y, vec.z
     );
 
@@ -430,7 +465,6 @@ setJavaIntArray(JNIEnv *env, jclass c, jobject obj, const char *name, int valueL
 void setJavaStringArray(JNIEnv *env, jclass c, jobject obj, const char *name, int valueLen,
                         const char **values) {
     jfieldID fieldId = env->GetFieldID(c, name, "[Ljava/lang/String;");
-    jclass stringClass = static_cast<jclass>(env->FindClass("java/lang/String"));
     jobjectArray array = env->NewObjectArray(valueLen, stringClass, 0);
 
     for (int i = 0; i < valueLen; i++) {

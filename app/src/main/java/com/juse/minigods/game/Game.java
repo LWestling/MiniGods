@@ -57,14 +57,18 @@ public class Game {
     private boolean gameOver, startNewGameSession;
     private int highscore;
 
-    public Game(AudioManager audioManager) {
+    private NewHighscoreListener highscoreListener;
+
+    public Game(AudioManager audioManager, NewHighscoreListener highscoreListener) {
         player = new Player(new Vector3f(START_POS));
         gameTimer = new GameTimer();
         pauseTimer = new GameTimer();
         map = new Map(new Vector2f(-18.f, -6.f), new Vector2i(COLUMNS, ROWS));
         random = new Random();
         uiManager = new UIManager();
+
         this.audioManager = audioManager;
+        this.highscoreListener = highscoreListener;
 
         playerSpeed = PLAYER_START_SPEED;
         playerFallMultiplier = PLAYER_BASE_FALL_MUL;
@@ -108,7 +112,7 @@ public class Game {
 
         if (player.isOutOfBounds()) {
             player.setVelocity(new Vector3f(0.f, -1.f, player.getPosition().z > 0 ? 1 : -1));
-            player.update(0.25f);
+            player.update(0.35f);
         }
 
         if (isGamePaused()) {
@@ -131,6 +135,7 @@ public class Game {
 
                 if (score > highscore) {
                     highscore = (int) score;
+                    highscoreListener.onNewHighscore(highscore);
                 }
             }
         }
@@ -252,5 +257,9 @@ public class Game {
 
     public void stop() {
         audioManager.delete();
+    }
+
+    public interface NewHighscoreListener {
+        void onNewHighscore(int highscore);
     }
 }

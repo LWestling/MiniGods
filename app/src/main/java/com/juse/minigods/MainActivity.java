@@ -5,6 +5,9 @@ import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.view.MotionEvent;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.games.Games;
 import com.juse.minigods.Utils.AudioManager;
 import com.juse.minigods.game.Game;
 import com.juse.minigods.game.Highscore;
@@ -77,7 +80,12 @@ public class MainActivity extends Activity {
     private void setupGame() {
         AudioManager audioManager = new AudioManager(this);
         audioManager.playMusic(this, AudioManager.Music.MAIN_MUSIC, true);
-        game = new Game(audioManager);
+        game = new Game(audioManager, highscore -> {
+            GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+            if (account != null) {
+                Games.getLeaderboardsClient(this, account).submitScore(getString(R.string.leaderboard_id), highscore);
+            }
+        });
     }
 
     private void setupGameRenderer() {
