@@ -24,7 +24,7 @@ import com.juse.minigods.rendering.renderers.WaterRenderer;
 
 import java.util.ArrayList;
 
-public class MainActivity extends Activity {
+public class GameActivity extends Activity {
     private GLSurfaceView glSurfaceView;
     private Game game;
     private Highscore highscore;

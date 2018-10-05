@@ -257,6 +257,7 @@ void extractAnimations(JNIEnv *pEnv, jclass pJclass, jobject pJobject, size_t pN
 
     jfieldID animationsField = pEnv->GetFieldID(pJclass, "animations", SIG_ARR(ANIM_CLASS));
     pEnv->SetObjectField(pJobject, animationsField, animationArray);
+    pEnv->DeleteLocalRef(animationArray);
 }
 
 jobject createAnimation(JNIEnv *pEnv, aiAnimation *pAnimation, jclass animClass, jclass nodeChannelClass) {
@@ -288,6 +289,7 @@ jobject createAnimation(JNIEnv *pEnv, aiAnimation *pAnimation, jclass animClass,
     // set node channels
     jmethodID setNodeChannels = pEnv->GetMethodID(animClass, "setNodeChannels", VOID_SIG(SIG_ARR(ANIM_CLASS "$NodeChannel")));
     pEnv->CallVoidMethod(animationObject, setNodeChannels, nodeChannelArray);
+    pEnv->DeleteLocalRef(nodeChannelArray);
 
     return pEnv->NewGlobalRef(animationObject);
 }
@@ -329,6 +331,9 @@ jobject createNodeChannel(JNIEnv *pEnv, aiNodeAnim *pAnim, jmethodID pID, jclass
     jstring name = pEnv->NewStringUTF(pAnim->mNodeName.C_Str());
     jobject nodeChannel = pEnv->NewGlobalRef(pEnv->NewObject(pJclass, pID, animationObject, name,
                                           pAnim->mPreState, pAnim->mPostState, translations, scalings, rotations));
+    pEnv->DeleteLocalRef(translations);
+    pEnv->DeleteLocalRef(rotations);
+    pEnv->DeleteLocalRef(scalings);
 
     return nodeChannel;
 }
@@ -367,6 +372,7 @@ void setVertexWeights(JNIEnv *pEnv, jclass pJclass, jobject pJobject, int numWei
 
     jfieldID vertexWeightField = pEnv->GetFieldID(pJclass, name, SIG_ARR(MODEL_DIR_PATH "VertexWeight"));
     pEnv->SetObjectField(pJobject, vertexWeightField, weightArray);
+    pEnv->DeleteLocalRef(weightArray);
 }
 
 void setMatrix(JNIEnv *pEnv, jclass pJclass, jobject pJobject, aiMatrix4x4 const &mat,
@@ -456,6 +462,7 @@ void setJavaStringArray(JNIEnv *env, jclass c, jobject obj, const char *name, in
     }
 
     env->SetObjectField(obj, fieldId, array);
+    env->DeleteLocalRef(array);
 }
 
 extern "C"

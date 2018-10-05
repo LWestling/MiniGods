@@ -68,7 +68,7 @@ public class MenuActivity extends AppCompatActivity {
             public void onFailedToUpdateConsentInfo(String reason) { }
         });
 
-        findViewById(R.id.playButton).setOnClickListener(v -> openView(MainActivity.class));
+        findViewById(R.id.playButton).setOnClickListener(v -> openView(GameActivity.class));
         findViewById(R.id.aboutButton).setOnClickListener(v -> openView(AboutActivity.class));
         adView = findViewById(R.id.adView);
 

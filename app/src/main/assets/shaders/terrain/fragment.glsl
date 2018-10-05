@@ -18,7 +18,7 @@ vec4 calcLight(vec3 color) {
     vec3 posToLight = light.xyz - pos;
     float distanceToLight = length(posToLight);
 
-    vec3 ambient = color * 0.33f;
+    vec3 ambient = color * 0.44f;
     vec3 diffuse = color * max((dot(normalize(posToLight), normal)), 0.f) * max(lightPower / (distanceToLight * distanceToLight), 0.f);
 
     return vec4(diffuse + ambient, 1.f);
