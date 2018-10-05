@@ -192,9 +192,7 @@ void extractAnimatedModel(JNIEnv *pEnv, jclass pJclass, jobject pJobject, const 
 
     jclass boneClass = pEnv->FindClass(MODEL_DIR_PATH "Bone");
     jclass vertexWeightClass = pEnv->FindClass(MODEL_DIR_PATH "VertexWeight");
-    jobjectArray boneArray = static_cast<jobjectArray>(pEnv->NewGlobalRef(
-            pEnv->NewObjectArray(static_cast<jsize>(mesh->mNumBones), boneClass, 0)
-    ));
+    jobjectArray boneArray = pEnv->NewObjectArray(static_cast<jsize>(mesh->mNumBones), boneClass, 0);
 
     for (int boneIndex = 0; boneIndex < mesh->mNumBones; boneIndex++) {
         aiBone *bone = mesh->mBones[boneIndex];
@@ -206,23 +204,24 @@ void extractAnimatedModel(JNIEnv *pEnv, jclass pJclass, jobject pJobject, const 
 
     jmethodID methodId = pEnv->GetMethodID(pJclass, "setBones", "(" SIG_ARR(MODEL_DIR_PATH "Bone") ")V");
     pEnv->CallVoidMethod(pJobject, methodId, boneArray);
+    pEnv->DeleteLocalRef(boneArray);
 
     jobject rootNode = extractNode(pEnv, NULL, pScene->mRootNode, pEnv->FindClass(NODE_CLASS));
     methodId = pEnv->GetMethodID(pJclass, "setRootNode", "(" SIG(NODE_CLASS) ")V");
     pEnv->CallVoidMethod(pJobject, methodId, rootNode);
-    pEnv->DeleteGlobalRef(rootNode);
+    pEnv->DeleteLocalRef(rootNode);
 
     extractAnimations(pEnv, pJclass, pJobject, pScene->mNumAnimations, pScene->mAnimations);
 }
 
 jobject extractNode(JNIEnv *pEnv, jobject parent, aiNode *pNode, jclass pNodeClass) {
-    jobject node = pEnv->NewGlobalRef(pEnv->AllocObject(pNodeClass));
+    jobject node = pEnv->AllocObject(pNodeClass);
 
     jobjectArray nodeArray = pEnv->NewObjectArray(pNode->mNumChildren, pNodeClass, 0);
     for (int nodeChildIndex = 0; nodeChildIndex < pNode->mNumChildren; nodeChildIndex++) {
         jobject nodeObj = extractNode(pEnv, node, pNode->mChildren[nodeChildIndex], pNodeClass);
         pEnv->SetObjectArrayElement(nodeArray, nodeChildIndex, nodeObj);
-        pEnv->DeleteGlobalRef(nodeObj);
+        pEnv->DeleteLocalRef(nodeObj);
     }
 
     // set children
@@ -252,7 +251,7 @@ void extractAnimations(JNIEnv *pEnv, jclass pJclass, jobject pJobject, size_t pN
     for (size_t i = 0; i < pNumAnimations; i++) {
         jobject animation = createAnimation(pEnv, pAnimation[i], animClass, nodeChannelClass);
         pEnv->SetObjectArrayElement(animationArray, static_cast<jsize>(i), animation);
-        pEnv->DeleteGlobalRef(animation);
+        pEnv->DeleteLocalRef(animation);
     }
 
     jfieldID animationsField = pEnv->GetFieldID(pJclass, "animations", SIG_ARR(ANIM_CLASS));
@@ -281,7 +280,7 @@ jobject createAnimation(JNIEnv *pEnv, aiAnimation *pAnimation, jclass animClass,
                                                 nodeMethod, nodeChannelClass, animationObject,
                                                 keyClass, keyInit);
         pEnv->SetObjectArrayElement(nodeChannelArray, nodeChannelIndex, nodeChannel);
-        pEnv->DeleteGlobalRef(nodeChannel);
+        pEnv->DeleteLocalRef(nodeChannel);
     }
 
     pEnv->DeleteLocalRef(keyClass);
@@ -291,7 +290,7 @@ jobject createAnimation(JNIEnv *pEnv, aiAnimation *pAnimation, jclass animClass,
     pEnv->CallVoidMethod(animationObject, setNodeChannels, nodeChannelArray);
     pEnv->DeleteLocalRef(nodeChannelArray);
 
-    return pEnv->NewGlobalRef(animationObject);
+    return animationObject;
 }
 
 jobject createNodeChannel(JNIEnv *pEnv, aiNodeAnim *pAnim, jmethodID pID, jclass pJclass,
@@ -303,9 +302,9 @@ jobject createNodeChannel(JNIEnv *pEnv, aiNodeAnim *pAnim, jmethodID pID, jclass
         jobject jVec = createVec3(pEnv, pAnim->mPositionKeys[i].mValue);
         jobject keyVal = createKeyVal<aiVectorKey>(pEnv, keyClass, keyInit, pAnim->mPositionKeys[i], jVec, animationObject);
 
-        pEnv->DeleteGlobalRef(jVec);
+        pEnv->DeleteLocalRef(jVec);
         pEnv->SetObjectArrayElement(translations, i, keyVal);
-        pEnv->DeleteGlobalRef(keyVal);
+        pEnv->DeleteLocalRef(keyVal);
     }
 
     rotations = pEnv->NewObjectArray(pAnim->mNumRotationKeys, keyClass, 0);
@@ -313,9 +312,9 @@ jobject createNodeChannel(JNIEnv *pEnv, aiNodeAnim *pAnim, jmethodID pID, jclass
         jobject jQuat = createQuaternion(pEnv, pAnim->mRotationKeys[i].mValue);
         jobject keyVal = createKeyVal<aiQuatKey>(pEnv, keyClass, keyInit, pAnim->mRotationKeys[i], jQuat, animationObject);
 
-        pEnv->DeleteGlobalRef(jQuat);
+        pEnv->DeleteLocalRef(jQuat);
         pEnv->SetObjectArrayElement(rotations, i, keyVal);
-        pEnv->DeleteGlobalRef(keyVal);
+        pEnv->DeleteLocalRef(keyVal);
     }
 
     scalings = pEnv->NewObjectArray(pAnim->mNumScalingKeys, keyClass, 0);
@@ -323,14 +322,13 @@ jobject createNodeChannel(JNIEnv *pEnv, aiNodeAnim *pAnim, jmethodID pID, jclass
         jobject jVec = createVec3(pEnv, pAnim->mScalingKeys[i].mValue);
         jobject keyVal = createKeyVal<aiVectorKey>(pEnv, keyClass, keyInit,
                                           pAnim->mScalingKeys[i], jVec, animationObject);
-        pEnv->DeleteGlobalRef(jVec);
+        pEnv->DeleteLocalRef(jVec);
         pEnv->SetObjectArrayElement(scalings, i, keyVal);
-        pEnv->DeleteGlobalRef(keyVal);
+        pEnv->DeleteLocalRef(keyVal);
     }
 
     jstring name = pEnv->NewStringUTF(pAnim->mNodeName.C_Str());
-    jobject nodeChannel = pEnv->NewGlobalRef(pEnv->NewObject(pJclass, pID, animationObject, name,
-                                          pAnim->mPreState, pAnim->mPostState, translations, scalings, rotations));
+    jobject nodeChannel = pEnv->NewObject(pJclass, pID, animationObject, name, pAnim->mPreState, pAnim->mPostState, translations, scalings, rotations);
     pEnv->DeleteLocalRef(translations);
     pEnv->DeleteLocalRef(rotations);
     pEnv->DeleteLocalRef(scalings);
@@ -340,7 +338,7 @@ jobject createNodeChannel(JNIEnv *pEnv, aiNodeAnim *pAnim, jmethodID pID, jclass
 
 template <class T>
 jobject createKeyVal(JNIEnv *pEnv, jclass pJclass, jmethodID pID, T key, jobject value, jobject animationObject) {
-    return pEnv->NewGlobalRef(pEnv->NewObject(pJclass, pID, animationObject, value, key.mTime));
+    return pEnv->NewObject(pJclass, pID, animationObject, value, key.mTime);
 }
 
 void createJavaBone(JNIEnv *pEnv, aiBone *bone, jclass boneClass, jclass vertexWeightClass,
@@ -354,6 +352,7 @@ void createJavaBone(JNIEnv *pEnv, aiBone *bone, jclass boneClass, jclass vertexW
                      "vertexWeights", vertexWeightClass);
 
     pEnv->SetObjectArrayElement(pArray, index, boneObject);
+    pEnv->DeleteLocalRef(boneObject);
 }
 
 void setVertexWeights(JNIEnv *pEnv, jclass pJclass, jobject pJobject, int numWeights,
@@ -388,6 +387,7 @@ void setMatrix(JNIEnv *pEnv, jclass pJclass, jobject pJobject, aiMatrix4x4 const
 
     jfieldID fieldId = pEnv->GetFieldID(pJclass, name, "Lorg/joml/Matrix4f;");
     pEnv->SetObjectField(pJobject, fieldId, matrix);
+    pEnv->DeleteLocalRef(matrix);
 }
 
 jobject createQuaternion(JNIEnv *pEnv, aiQuaternion const &quat) {
@@ -397,7 +397,7 @@ jobject createQuaternion(JNIEnv *pEnv, aiQuaternion const &quat) {
             quat.x, quat.y, quat.z, quat.w
     );
 
-    return pEnv->NewGlobalRef(matrix);
+    return matrix;
 }
 
 jobject createVec3(JNIEnv *pEnv, aiVector3D const &vec) {
@@ -407,7 +407,7 @@ jobject createVec3(JNIEnv *pEnv, aiVector3D const &vec) {
             vec.x, vec.y, vec.z
     );
 
-    return pEnv->NewGlobalRef(matrix);
+    return matrix;
 }
 
 void setStringField(JNIEnv *pEnv, jclass pJclass, jobject pJobject, const char *value,
