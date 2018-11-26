@@ -22,9 +22,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 
 public class Game {
-    private static final float SCORE_POWER = 1.8f, SPEED_POWER = 1.025f,
+    private static final float SCORE_POWER = 1.8f, SPEED_POWER = 1.02f,
         SCORE_MUL = 0.0075f, SCORE_START = 0.8f, SPEED_MUL = 0.011f, SPEED_START = 7.f,
-        PLAYER_START_SPEED = 10.f, PLAYER_BASE_FALL_MUL = 0.47f, TREE_TIMER = 2.8f; // change with difficulty or something?
+        PLAYER_START_SPEED = 10.f, PLAYER_BASE_FALL_MUL = 0.47f, TREE_TIMER = 0.9f; // change with difficulty or something?
     private static final int ROWS = 14, COLUMNS = 18;
 
     private static final Vector3f START_POS = new Vector3f(-6.f, 0.01f, 3.f);
@@ -198,7 +198,7 @@ public class Game {
                 new Vector3f(
                         map.getPosition().x() + terrain.getWidth() - 1.f,
                         0.f,
-                        random.nextInt(map.getTerrain().getRows() - 1)
+                        0.5f + random.nextInt(map.getTerrain().getRows() - 2)
                 )
         ));
     }

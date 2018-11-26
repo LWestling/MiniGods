@@ -44,18 +44,15 @@ public class PlayerRenderer implements RendererInterface {
     private Player player;
     private int renderPass;
 
-    private Model playerModel;
     private Animation playerRunAnimation, playerDeathAnimation;
-
     private AnimatedModelMaterial animatedModelMaterial;
-    private ModelLoader modelLoader;
 
     public PlayerRenderer(Context context,  Player player) {
         String fileNames[] = {"models/dog/BeagleDefault.fbx", "models/dog/BeagleRun.fbx", "models/dog/BeagleDeath.fbx"};
         Model models[] = new ModelLoader().loadModels(fileNames, context, context.getAssets());
         assert models != null;
 
-        playerModel = models[0];
+        Model playerModel = models[0];
         playerRunAnimation = models[1].animations[models[1].getAnimationIndex("Take 001")];
         playerDeathAnimation = models[2].animations[models[2].getAnimationIndex("Take 001")];
         animatedModelMaterial = new AnimatedModelMaterial(playerModel,"Take 001");
@@ -69,8 +66,6 @@ public class PlayerRenderer implements RendererInterface {
     }
 
     public void setup(ShaderManager shaderManager, MaterialManager materialManager, AssetManager assets) {
-        modelLoader = new ModelLoader();
-
         int vs, fs;
         try {
             vs = loadShader(shaderManager, assets, GL_VERTEX_SHADER, VS);

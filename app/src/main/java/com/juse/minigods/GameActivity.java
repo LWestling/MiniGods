@@ -85,6 +85,11 @@ public class GameActivity extends Activity {
             bundle.putInt("score", score);
             Logger.AnalyticsLog(this, "new_score", bundle);
 
+            if (isHighscore && score > 50)
+                Logger.AnalyticsProperty(this, "player_type", "has_reached_50");
+            else if (isHighscore && score > 5)
+                Logger.AnalyticsProperty(this, "player_type", "has_reached_5");
+
             if (isHighscore) {
                 GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
                 if (account != null) {

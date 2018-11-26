@@ -9,8 +9,8 @@ import java.util.Locale;
  */
 public class UIManager {
     // todo replace with localised?
-    private final static String SCORE_FORMAT = "SCORE:\n%d.", HIGHSCORE_FORMAT = "HIGHSCORE:\n%d.",
-            MSG_GRATZ = "NEW HIGHSCORE!", GAMEOVER_SCORE = "SCORE: %d.", CONTINUE = "PRESS TO PLAY AGAIN!";
+    private final static String SCORE_FORMAT = "SCORE\n%d", HIGHSCORE_FORMAT = "HIGHSCORE\n%d",
+            MSG_GRATZ = "NEW HIGHSCORE", GAMEOVER_SCORE = "SCORE %d", CONTINUE = "TOUCH THE SCREEN\nTO PLAY AGAIN";
 
     private enum UIState { NONE, IN_GAME, GAME_OVER }
     private UIState currentState;
@@ -40,12 +40,12 @@ public class UIManager {
     public void setOverlayGameover(TextCache cache, int highscore) {
         if (currentScore > highscore) {
             gameoverHighscoreMessage = cache.addStringToRender(
-                    new TextCache.Text(MSG_GRATZ, -0.9f, 0.65f, 2.f)
+                    new TextCache.Text(MSG_GRATZ, -0.9f, 0.65f, 1.f)
             );
         }
 
         gameoverScore = cache.addStringToRender(
-                new TextCache.Text(String.format(Locale.ENGLISH, GAMEOVER_SCORE, currentScore), -0.45f, 0.2f, 2)
+                new TextCache.Text(String.format(Locale.ENGLISH, GAMEOVER_SCORE, currentScore), -0.45f, 0.2f,1.f)
         );
         gameoverMessage = cache.addStringToRender(
                 new TextCache.Text(CONTINUE, -0.55f, -.1f) // todo get x to center text somehow plz

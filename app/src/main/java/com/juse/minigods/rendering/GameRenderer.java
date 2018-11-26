@@ -19,7 +19,6 @@ import static android.opengl.GLES20.GL_ONE_MINUS_SRC_ALPHA;
 import static android.opengl.GLES20.GL_SRC_ALPHA;
 import static android.opengl.GLES20.glBlendFunc;
 import static android.opengl.GLES20.glEnable;
-import static android.opengl.GLES31.GL_SAMPLER_2D_MULTISAMPLE;
 import static android.opengl.GLES32.GL_COLOR_BUFFER_BIT;
 import static android.opengl.GLES32.GL_DEPTH_BUFFER_BIT;
 import static android.opengl.GLES32.GL_DONT_CARE;
@@ -74,9 +73,6 @@ public class GameRenderer implements GLSurfaceView.Renderer {
     public void onDrawFrame(GL10 gl10) {
         GLES31.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_BLEND);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            glEnable(GL_SAMPLER_2D_MULTISAMPLE);
-        }
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         // obvious bad multithreading

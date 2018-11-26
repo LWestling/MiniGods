@@ -134,8 +134,11 @@ public class Model {
         }
     }
 
-    private int getBoneIndex(String name) {
-        return boneIndices.getOrDefault(name, -1);
+    private int getBoneIndex(String name) { // :(
+        if (!boneIndices.containsKey(name)) {
+            return -1;
+        }
+        return boneIndices.get(name);
     }
 
     private Matrix4f calculateMatrix(Animation.NodeChannel channel, double tick) {

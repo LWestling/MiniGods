@@ -3,6 +3,8 @@ package com.juse.minigods.reporting;
 import android.opengl.GLES31;
 import android.opengl.GLUtils;
 
+import com.juse.minigods.Legality.Logger;
+
 import static android.opengl.GLES31.*;
 
 /**
@@ -13,9 +15,7 @@ public class CrashManager {
     public enum CrashType { NULL, IO, GRAPHICS, LOGIC, ANDROID }
 
     public static void ReportCrash(CrashType crashType, String message, Exception exception) {
-        // NYI TODO FIREBASE CRASH REPORTING
-        System.out.println(crashType.name() + ": " + message);
-        exception.printStackTrace();
+        Logger.CrashlyticsLog(exception);
     }
 
     public static void HandleOpenGlErrors() {

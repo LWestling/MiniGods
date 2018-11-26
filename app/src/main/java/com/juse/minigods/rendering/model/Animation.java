@@ -28,9 +28,11 @@ public class Animation {
     }
 
     public NodeChannel getNodeChannel(String name) {
-        int index = channelIndices.getOrDefault(name, -1);
-        if (index == -1) return null;
+        if (!channelIndices.containsKey(name)) {
+            return null;
+        }
 
+        int index = channelIndices.get(name);
         return channels[index];
     }
 

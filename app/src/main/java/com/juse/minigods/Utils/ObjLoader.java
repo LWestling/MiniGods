@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class ObjLoader {
+    private static final int FLOAT_BYTES = 4;
     private static final String MODEL_PATH = "models/%s.obj", MATERIAL_PATH = "models/mat/%s";
     private static final String MTL_LIB = "mtllib", MTL_USE = "usemtl",
             VERTEX = "v", VERTEX_NORMAL = "vn", FACE = "f", SPLIT = " ", FACE_SPLIT = "/";
@@ -63,17 +64,17 @@ public class ObjLoader {
         // OpenGl normal and vertex has to be on the same "node", in obj they can have different indices
         ArrayList<FacePart> filteredFaceParts = new ArrayList<>();
         ArrayList<Integer> facePartIndices = new ArrayList<>();
-        faces.forEach(faceParts ->
-            faceParts.forEach(facePart -> {
+        for (ArrayList<FacePart> faceParts : faces) {
+            for (FacePart facePart : faceParts) {
                 int index = filteredFaceParts.indexOf(facePart);
-                if(index == -1) {
+                if (index == -1) {
                     facePartIndices.add(filteredFaceParts.size());
                     filteredFaceParts.add(facePart);
                 } else {
                     facePartIndices.add(index);
                 }
-            })
-        );
+            }
+        }
 
         addVertexData(filteredFaceParts, materialBuilder);
 
@@ -90,18 +91,20 @@ public class ObjLoader {
 
         if (!normals.isEmpty()) {
             // if it has normals
-            filteredFaceParts.forEach(facePart -> {
+            for (FacePart facePart : filteredFaceParts) {
                 vertexData.add(vertices.get(facePart.vertexIndex - 1));
                 vertexData.add(normals.get(facePart.normalIndex - 1));
                 vertexData.add(facePart.material.getDiffuse());
-            });
+            }
 
             builder.setVertices(DataUtils.ToBuffer(toVec3Array(vertexData)), vertexData.size(),
                     GLES31.GL_STATIC_DRAW, new int[] {3, 3, 3}, new int[] {0, 1, 2},
-                    new int[] {Float.BYTES * 9, Float.BYTES * 9, Float.BYTES * 9}, new int[] {0, Float.BYTES * 3, Float.BYTES * 6});
+                    new int[] {FLOAT_BYTES * 9, FLOAT_BYTES * 9, FLOAT_BYTES * 9}, new int[] {0, FLOAT_BYTES * 3, FLOAT_BYTES * 6});
         } else {
             // if only vertices
-            filteredFaceParts.forEach(facePart -> vertexData.add(vertices.get(facePart.vertexIndex)));
+            for (FacePart facePart : filteredFaceParts) {
+                vertexData.add(vertices.get(facePart.vertexIndex));
+            }
         }
     }
 

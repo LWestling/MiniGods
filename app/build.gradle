@@ -60,10 +60,7 @@ project.ext.jomlVersion = "1.9.3-SNAPSHOT"
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    // DONT CHANGE THEM TO 28.0.0 IT FUCKS EVERYTHING
-    //noinspection GradleCompatible
     implementation 'com.android.support:appcompat-v7:28.0.0'
-    //noinspection GradleCompatible
     implementation 'com.android.support:support-v4:28.0.0'
     implementation "org.joml:joml-android:${jomlVersion}"
     implementation 'com.flowpowered:flow-noise:1.0.1-SNAPSHOT'
