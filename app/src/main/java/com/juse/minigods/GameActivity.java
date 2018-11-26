@@ -103,7 +103,7 @@ public class GameActivity extends Activity {
         rendererList.add(new WaterRenderer(map.getWaterGrids()));
         rendererList.add(new PlayerRenderer(this, game.getPlayer()));
 
-        fontRenderer = new FontRenderer(new Font("font", "fontData2", getAssets()));
+        fontRenderer = new FontRenderer(new Font("bitFont", "bitFont", getAssets()));
         rendererList.add(fontRenderer);
 
         gameRenderer = new GameRenderer(getAssets());

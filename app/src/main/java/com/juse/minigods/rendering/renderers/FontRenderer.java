@@ -44,7 +44,7 @@ public class FontRenderer implements RendererInterface{
 
     private FloatBuffer getTextVertexData(TextCache.Text text) {
         int vertexComponents = 5; // x,y,z u,v = 5
-        FloatBuffer floatBuffer = ByteBuffer.allocateDirect(countCharacter(text.getContent()) * vertexComponents * 6 * Float.BYTES)
+        FloatBuffer floatBuffer = ByteBuffer.allocateDirect(countCharacter(text.getContent()) * vertexComponents * 6 * FLOAT_BYTES)
                 .order(ByteOrder.nativeOrder()).asFloatBuffer();
 
         float x = text.getX(), y = text.getY(), scale = text.getScale(); // todo get coordinate from the cache
@@ -117,7 +117,7 @@ public class FontRenderer implements RendererInterface{
         MaterialBuilder materialBuilder = new MaterialBuilder();
         materialBuilder.setUniforms(new int[] {2}, DataUtils.ToBuffer(new Matrix4f()));
         materialBuilder.setVertices(vertexData, vertexData.capacity() / 5, GL_STATIC_DRAW,
-                new int[] {3, 2}, new int[] {0, 1}, new int[] {Float.BYTES * 5, Float.BYTES * 5}, new int[] {0, Float.BYTES * 3});
+                new int[] {3, 2}, new int[] {0, 1}, new int[] {FLOAT_BYTES * 5, FLOAT_BYTES * 5}, new int[] {0, FLOAT_BYTES * 3});
         materialBuilder.setImageTexture(font.getImageTexture());
 
         Material textM = new Material(renderPass, materialBuilder);

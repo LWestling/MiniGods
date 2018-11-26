@@ -14,7 +14,7 @@ import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
 public class TerrainColumn implements Cloneable{
-    private final static float TEXTURE_COUNT = 2.f;
+    private final static float TEXTURE_COUNT = 1.f;
     private int height, loops;
     private float offset, startOffset, minOffset, resetOffset, columnWidth;
     private ArrayList<VertexData> columnVertexData;
