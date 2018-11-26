@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "370065239573",
+    "firebase_url": "https://mini-dogs-32926258.firebaseio.com",
+    "project_id": "mini-dogs-32926258",
+    "storage_bucket": "mini-dogs-32926258.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:370065239573:android:a5d75d9af25acd6d",
+        "android_client_info": {
+          "package_name": "com.juse.minigods"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "370065239573-86r1vkoqvkakbos7o22uakbcdplk43m5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA6e8NFCx3xivIr4AAfCoOCZV_tqBrk1BY"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

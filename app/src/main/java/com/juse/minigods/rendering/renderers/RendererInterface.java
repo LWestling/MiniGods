@@ -13,6 +13,8 @@ import java.io.IOException;
  */
 
 public interface RendererInterface {
+    int FLOAT_BYTES = 4;
+
     void setup(ShaderManager shaderManager, MaterialManager materialManager, AssetManager assets);
     void render(ShaderManager shaderManager, MaterialManager materialManager);
     void update(MaterialManager materialManager);

@@ -102,6 +102,7 @@ void AndroidJNIIOSystem::AndroidActivityInit(ANativeActivity* activity)
 
 // ------------------------------------------------------------------------------------------------
 // Create the directory for the extracted resource
+#include <errno.h>
 static int mkpath(std::string path, mode_t mode)
 {
     if (mkdir(path.c_str(), mode) == -1) {

@@ -22,8 +22,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 
 public class Game {
-    private static final float SCORE_POWER = 1.9f, SPEED_POWER = 1.025f,
-        SCORE_MUL = 0.0065f, SPEED_MUL = 0.011f, SPEED_START = 7.f,
+    private static final float SCORE_POWER = 1.8f, SPEED_POWER = 1.025f,
+        SCORE_MUL = 0.0075f, SCORE_START = 0.8f, SPEED_MUL = 0.011f, SPEED_START = 7.f,
         PLAYER_START_SPEED = 10.f, PLAYER_BASE_FALL_MUL = 0.47f, TREE_TIMER = 2.8f; // change with difficulty or something?
     private static final int ROWS = 14, COLUMNS = 18;
 
@@ -57,9 +57,9 @@ public class Game {
     private boolean gameOver, startNewGameSession;
     private int highscore;
 
-    private NewHighscoreListener highscoreListener;
+    private ScoreListener scoreListener;
 
-    public Game(AudioManager audioManager, NewHighscoreListener highscoreListener) {
+    public Game(AudioManager audioManager, ScoreListener highscoreListener) {
         player = new Player(new Vector3f(START_POS));
         gameTimer = new GameTimer();
         pauseTimer = new GameTimer();
@@ -68,7 +68,7 @@ public class Game {
         uiManager = new UIManager();
 
         this.audioManager = audioManager;
-        this.highscoreListener = highscoreListener;
+        this.scoreListener = highscoreListener;
 
         playerSpeed = PLAYER_START_SPEED;
         playerFallMultiplier = PLAYER_BASE_FALL_MUL;
@@ -135,7 +135,9 @@ public class Game {
 
                 if (score > highscore) {
                     highscore = (int) score;
-                    highscoreListener.onNewHighscore(highscore);
+                    scoreListener.onScore(highscore, true);
+                } else {
+                    scoreListener.onScore((int) score, false);
                 }
             }
         }
@@ -187,7 +189,7 @@ public class Game {
         if (mapSpeed > MAX_MAP_SPEED)
             mapSpeed = MAX_MAP_SPEED;
         
-        score = (float) Math.pow(totalTime, SCORE_POWER) * SCORE_MUL;
+        score = (float) Math.pow(totalTime, SCORE_POWER) * SCORE_MUL + SCORE_START;
     }
 
     private void spawnObstacleLine() {
@@ -259,7 +261,7 @@ public class Game {
         audioManager.delete();
     }
 
-    public interface NewHighscoreListener {
-        void onNewHighscore(int highscore);
+    public interface ScoreListener {
+        void onScore(int score, boolean highscore);
     }
 }

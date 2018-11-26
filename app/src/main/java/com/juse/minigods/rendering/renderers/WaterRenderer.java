@@ -44,7 +44,7 @@ public class WaterRenderer implements RendererInterface {
         waterGridMaterials = new Material[waterGrids.length];
         for (int i = 0; i < waterGrids.length; i++) {
             WaterGrid waterGrid = waterGrids[i];
-            int offsets[] = {0, Float.BYTES * waterGrid.getVertexData().capacity() / 2};
+            int offsets[] = {0, FLOAT_BYTES * waterGrid.getVertexData().capacity() / 2};
 
             MaterialBuilder builder = new MaterialBuilder();
             waterGrid.getVertexDataUpdateLock().lock();

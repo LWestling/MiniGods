@@ -1,13 +1,14 @@
 apply plugin: 'com.android.application'
+apply plugin: 'io.fabric'
 
 android {
     compileSdkVersion 28
     defaultConfig {
         applicationId "com.juse.minigods"
-        minSdkVersion 24
+        minSdkVersion 18
         targetSdkVersion 28
-        versionCode 12
-        versionName "1.0.2"
+        versionCode 14
+        versionName "1.1.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
         externalNativeBuild {
@@ -39,10 +40,20 @@ android {
     sourceSets { main { jniLibs.srcDirs = ['src/main/jni', 'src/main/jni/'] } }
 }
 
-repositories {
-    maven {
-        url "https://oss.sonatype.org/content/repositories/snapshots/"
+buildscript {
+    repositories {
+        maven { url 'https://maven.fabric.io/public' }
     }
+
+    dependencies {
+        classpath 'io.fabric.tools:gradle:1.25.4'
+    }
+}
+
+repositories {
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+    maven { url "https://jitpack.io" }
+    maven { url 'https://maven.fabric.io/public' }
 }
 
 project.ext.jomlVersion = "1.9.3-SNAPSHOT"
@@ -51,17 +62,28 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     // DONT CHANGE THEM TO 28.0.0 IT FUCKS EVERYTHING
     //noinspection GradleCompatible
-    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.android.support:appcompat-v7:28.0.0'
     //noinspection GradleCompatible
-    implementation 'com.android.support:support-v4:27.1.1'
+    implementation 'com.android.support:support-v4:28.0.0'
     implementation "org.joml:joml-android:${jomlVersion}"
     implementation 'com.flowpowered:flow-noise:1.0.1-SNAPSHOT'
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+
+    implementation 'com.google.android.gms:play-services-games:16.0.0'
+    implementation 'com.google.android.gms:play-services-auth:16.0.1'
+    implementation 'com.google.android.gms:play-services-ads:17.1.1'
+    implementation 'com.google.android.ads.consent:consent-library:1.0.6'
+
+    implementation 'com.google.firebase:firebase-core:16.0.5'
+    implementation 'com.google.firebase:firebase-config:16.1.0'
+    implementation 'com.google.firebase:firebase-messaging:17.3.4'
+    implementation 'com.crashlytics.sdk.android:crashlytics:2.9.6'
+
+    implementation 'com.github.MFlisar:GDPRDialog:1.2.7'
+
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    implementation 'com.google.android.gms:play-services-games:15.0.1'
-    implementation 'com.google.android.gms:play-services-auth:16.0.0'
-    implementation 'com.google.android.gms:play-services-ads:15.0.1'
-    implementation 'com.google.android.ads.consent:consent-library:1.0.6'
 }
+
+apply plugin: 'com.google.gms.google-services'

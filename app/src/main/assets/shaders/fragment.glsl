@@ -11,7 +11,7 @@ in vec3 outColor;
 out vec4 finalColor;
 
 vec4 calcLight(vec4 color) {
-    vec3 color3 = color.xyz;
+    vec3 lightColor = vec3(255.f / 255.f, 114.f / 255.f, 81.f / 255.f);
     float lightPower = 900.f;
 
     vec3 posToLight = light.xyz - pos;
@@ -21,12 +21,10 @@ vec4 calcLight(vec4 color) {
     vec3 toCamera = normalize(camera.xyz - pos);
     vec3 lightReflection = reflect(-posToLightNor, outNormal);
 
-    vec3 ambient = color3 * 1.2f;
-    vec3 diffuse = color3 * max((dot(posToLightNor, outNormal)), 0.f) * max(lightPower / (distanceToLight * distanceToLight), 0.f);
+    float ambient = 0.6f;
+    float diffuse = max((dot(posToLightNor, outNormal)), 0.f) * max(lightPower / (distanceToLight * distanceToLight), 0.f);
 
-    float specular = pow(max(dot(lightReflection, toCamera), 0.f), 200.f);
-
-    return vec4(diffuse + ambient, color.a);
+    return vec4(lightColor * color.rgb * (ambient + diffuse), color.a);
 }
 
 void main() {

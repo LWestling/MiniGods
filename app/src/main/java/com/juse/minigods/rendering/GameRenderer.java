@@ -3,6 +3,7 @@ package com.juse.minigods.rendering;
 import android.content.res.AssetManager;
 import android.opengl.GLES31;
 import android.opengl.GLSurfaceView;
+import android.os.Build;
 
 import com.juse.minigods.Utils.DataUtils;
 import com.juse.minigods.rendering.renderers.RendererInterface;
@@ -18,6 +19,7 @@ import static android.opengl.GLES20.GL_ONE_MINUS_SRC_ALPHA;
 import static android.opengl.GLES20.GL_SRC_ALPHA;
 import static android.opengl.GLES20.glBlendFunc;
 import static android.opengl.GLES20.glEnable;
+import static android.opengl.GLES31.GL_SAMPLER_2D_MULTISAMPLE;
 import static android.opengl.GLES32.GL_COLOR_BUFFER_BIT;
 import static android.opengl.GLES32.GL_DEPTH_BUFFER_BIT;
 import static android.opengl.GLES32.GL_DONT_CARE;
@@ -51,14 +53,18 @@ public class GameRenderer implements GLSurfaceView.Renderer {
     public void onSurfaceCreated(GL10 gl10, EGLConfig eglConfig) {
         if (DEBUGGING) {
             if (SHOW_OGL_DEBUG) {
-                glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE,
-                        0, DataUtils.newIntBuffer(0), true);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE,
+                            0, DataUtils.newIntBuffer(0), true);
+                }
             }
         }
 
         GLES31.glClearColor(0.f, 148.f / 255.f, 1.f, 1.f);
 
-        rendererList.forEach(rendererInterface -> rendererInterface.setup(shaderManager, materialManager, assetManager));
+        for (RendererInterface rendererInterface : rendererList) {
+            rendererInterface.setup(shaderManager, materialManager, assetManager);
+        }
     }
 
     public void onSurfaceChanged(GL10 gl10, int width, int height) {
@@ -68,11 +74,18 @@ public class GameRenderer implements GLSurfaceView.Renderer {
     public void onDrawFrame(GL10 gl10) {
         GLES31.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_BLEND);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            glEnable(GL_SAMPLER_2D_MULTISAMPLE);
+        }
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         // obvious bad multithreading
-        rendererList.forEach(rendererInterface -> rendererInterface.update(materialManager));
-        rendererList.forEach(rendererInterface -> rendererInterface.render(shaderManager, materialManager));
+        for (RendererInterface anInterface : rendererList) {
+            anInterface.update(materialManager);
+        }
+        for (RendererInterface rendererInterface : rendererList) {
+            rendererInterface.render(shaderManager, materialManager);
+        }
 
         CrashManager.HandleOpenGlErrors();
     }

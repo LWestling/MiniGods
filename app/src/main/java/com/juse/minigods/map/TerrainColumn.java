@@ -1,5 +1,10 @@
 package com.juse.minigods.map;
 
+import com.flowpowered.noise.Noise;
+import com.flowpowered.noise.NoiseQuality;
+import com.juse.minigods.Utils.GlobalGameSeed;
+import com.juse.minigods.rendering.renderers.RendererInterface;
+
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -9,16 +14,33 @@ import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
 public class TerrainColumn implements Cloneable{
-    private static final int TRIANGLE_SIZE = 3;
-    private float offset, minOffset, resetOffset;
+    private final static float TEXTURE_COUNT = 2.f;
+    private int height, loops;
+    private float offset, startOffset, minOffset, resetOffset, columnWidth;
     private ArrayList<VertexData> columnVertexData;
-    private ArrayList<Integer> columnIndices;
+    private float heights[][];
 
-    TerrainColumn(int height, float startOffset, float minOffset, float resetOffset) {
-        generateTerrain(height);
+    TerrainColumn(int height, float startOffset, float minOffset, float resetOffset, float columnWidth) {
+        this.height = height;
         this.offset = startOffset;
+        this.startOffset = startOffset;
         this.minOffset = minOffset;
         this.resetOffset = resetOffset;
+        this.columnWidth = columnWidth;
+        loops = 0;
+
+        heights = new float[2][height];
+        generateHeights();
+        generateTerrain(height);
+    }
+
+    private void generateHeights() {
+        for (int x = 0; x < 2; x++) {
+            float xPos = x * columnWidth + (loops * (resetOffset - minOffset)) + startOffset;
+            for (int z = 0; z < height; z++) {
+                heights[x][z] = getHeight(xPos, z);
+            }
+        }
     }
 
     /**
@@ -27,56 +49,175 @@ public class TerrainColumn implements Cloneable{
      */
     TerrainColumn(TerrainColumn terrainColumn) {
         offset = terrainColumn.offset;
+        startOffset = terrainColumn.startOffset;
         minOffset = terrainColumn.minOffset;
         resetOffset = terrainColumn.resetOffset;
+        height = terrainColumn.height;
+        loops = terrainColumn.loops;
+        columnWidth = terrainColumn.columnWidth;
 
-        columnVertexData = new ArrayList<>();
-        for (VertexData vertexData : terrainColumn.columnVertexData) {
-            columnVertexData.add(new VertexData(vertexData));
-        }
-        columnIndices = terrainColumn.columnIndices;
+        heights = new float[2][height];
+        generateHeights();
+        generateTerrain(height);
+    }
+
+    private void addTriangleVertexData(int row, float endYOffset, float endZOffset,
+                                       float triangleHeight, float triangleWidth,
+                                       int textureTop, int textureBot) {
+        float texX = textureTop / TEXTURE_COUNT, texEndX = (textureTop + 1) / TEXTURE_COUNT;
+
+        float z = row * triangleHeight;
+        float endZ = z + triangleHeight + endZOffset;
+
+        Vector3f vecs[] = new Vector3f[4];
+        vecs[0] = new Vector3f(0.f, heights[0][row] , z);
+        vecs[1] = new Vector3f(triangleWidth, heights[1][row], z);
+        vecs[2] = new Vector3f(0.f, heights[0][row + 1] + endYOffset, endZ);
+        vecs[3] = new Vector3f(triangleWidth, heights[1][row + 1] + endYOffset, endZ);
+
+        // ugh
+        Vector3f normalTop = new Vector3f(vecs[0]).sub(vecs[2]).cross(new Vector3f(vecs[0]).sub(vecs[1])).normalize();
+        Vector3f normalBot = new Vector3f(vecs[1]).sub(vecs[2]).cross(new Vector3f(vecs[1]).sub(vecs[3])).normalize();
+
+        // top
+        columnVertexData.add(
+                new VertexData(
+                        vecs[0],
+                        normalTop,
+                        new Vector2f(texX, 0.f)
+                )
+        );
+        columnVertexData.add(
+                new VertexData(
+                        vecs[1],
+                        normalTop,
+                        new Vector2f(texEndX, 0.f)
+                )
+        );
+        columnVertexData.add(
+                new VertexData(
+                        vecs[2],
+                        normalTop,
+                        new Vector2f(texX, 1.f)
+                )
+        );
+
+        texX = textureBot / TEXTURE_COUNT;
+        texEndX = (textureBot + 1) / TEXTURE_COUNT;
+
+        // bot
+        columnVertexData.add(
+                new VertexData(
+                        vecs[1],
+                        normalBot,
+                        new Vector2f(texEndX, 0)
+                )
+        );
+        columnVertexData.add(
+                new VertexData(
+                        vecs[3],
+                        normalBot,
+                        new Vector2f(texEndX, 1.f)
+                )
+        );
+        columnVertexData.add(
+                new VertexData(
+                        vecs[2],
+                        normalBot,
+                        new Vector2f(texX, 1.f)
+                )
+        );
+    }
+
+    private void addTriangleVertexData2(int row, float endYOffset,
+                                        float triangleHeight, float triangleWidth,
+                                        int textureTop, int textureBot) {
+        float texX = textureTop / TEXTURE_COUNT, texEndX = (textureTop + 1) / TEXTURE_COUNT;
+
+        float z = row * triangleHeight;
+        float endZ = z + triangleHeight;
+
+        Vector3f vecs[] = new Vector3f[4];
+        vecs[0] = new Vector3f(0.f, heights[0][row], z);
+        vecs[1] = new Vector3f(triangleWidth, heights[1][row], z);
+        vecs[2] = new Vector3f(0.f, heights[0][row + 1], endZ);
+        vecs[3] = new Vector3f(triangleWidth, heights[1][row + 1], endZ);
+
+        // ugh
+        Vector3f normalTop = new Vector3f(vecs[0]).sub(vecs[2]).cross(new Vector3f(vecs[0]).sub(vecs[3])).normalize();
+        Vector3f normalBot = new Vector3f(vecs[0]).sub(vecs[3]).cross(new Vector3f(vecs[0]).sub(vecs[1])).normalize();
+
+        // top
+        columnVertexData.add(
+                new VertexData(
+                        vecs[0],
+                        normalTop,
+                        new Vector2f(texX, 0.f)
+                )
+        );
+        columnVertexData.add(
+                new VertexData(
+                        vecs[3],
+                        normalTop,
+                        new Vector2f(texEndX, 0.f)
+                )
+        );
+        columnVertexData.add(
+                new VertexData(
+                        vecs[2],
+                        normalTop,
+                        new Vector2f(texX, 1.f)
+                )
+        );
+
+        texX = textureBot / TEXTURE_COUNT;
+        texEndX = (textureBot + 1) / TEXTURE_COUNT;
+
+        // bot
+        columnVertexData.add(
+                new VertexData(
+                        vecs[0],
+                        normalBot,
+                        new Vector2f(texEndX, row)
+                )
+        );
+        columnVertexData.add(
+                new VertexData(
+                        vecs[1],
+                        normalBot,
+                        new Vector2f(texEndX, 1.f)
+                )
+        );
+        columnVertexData.add(
+                new VertexData(
+                        vecs[3],
+                        normalBot,
+                        new Vector2f(texX, 1.f)
+                )
+        );
     }
 
     private void generateTerrain(int height) {
         columnVertexData = new ArrayList<>();
-        columnIndices = new ArrayList<>();
+        float triangleHeight = 2.f;
 
-        for (int row = 0; row < height + 1; row++) {
-            for (int col = 0; col < 2; col++) {
-                columnVertexData.add(
-                        new VertexData(
-                                new Vector3f(col, 0.f, row),
-                                new Vector2f(col, row)
-                        )
-                );
-            }
+        for (int row = 0; row < height / 2; row++) {
+            if (Math.random() < 0.5f)
+                addTriangleVertexData2(row, 0.f, triangleHeight, 1.f,
+                        (int) (Math.random() * TEXTURE_COUNT), (int) (Math.random() * TEXTURE_COUNT));
+            else
+                addTriangleVertexData(row, 0.f, 0.f, triangleHeight, 1.f,
+                        (int) (Math.random() * TEXTURE_COUNT), (int) (Math.random() * TEXTURE_COUNT));
         }
 
-        // bottom row towards player to block view
-        for (int col = 0; col < 2; col++) {
-            columnVertexData.add(
-                    new VertexData(
-                            new Vector3f(col, -14.0f, height + 15.f),
-                            new Vector2f(col, height + 1)
-                    )
-            );
-        }
-
-        for (int tri = 0; tri < (height + 1) * 2 /* Two extra triangle for bottom*/; tri++) {
-            if (tri % 2 == 0) { // if even it's tri, tri + 1, tri + 2
-                for (int i = 0; i < TRIANGLE_SIZE; i++)
-                    columnIndices.add(tri + i);
-            } else { // if odd it's tri + 2, tri + 1, tri + 3 (backwards and then loop back) (TODO: Probably a bug here, see screen)
-                for (int i = TRIANGLE_SIZE - 1; i > - TRIANGLE_SIZE - 1; i--)
-                    columnIndices.add(tri + (i < 0 ? -i : i));
-            }
-        }
+        addTriangleVertexData(height / 2, -14.f, 15.f, triangleHeight,
+                1.f, 0, 0);
     }
 
     public FloatBuffer getVertexData() {
-        // java is so efficient sometimes
+        // java is so efficient sometimes, should probably just use this instead of using a VertexData class at all..
         FloatBuffer floatBuffer = ByteBuffer
-                .allocateDirect(columnVertexData.size() * Float.BYTES * 5)
+                .allocateDirect(columnVertexData.size() * RendererInterface.FLOAT_BYTES * 8)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
         for (int i = 0; i < columnVertexData.size(); i++) {
@@ -86,6 +227,10 @@ public class TerrainColumn implements Cloneable{
             floatBuffer.put(vertexData.position.y());
             floatBuffer.put(vertexData.position.z());
 
+            floatBuffer.put(vertexData.normal.x());
+            floatBuffer.put(vertexData.normal.y());
+            floatBuffer.put(vertexData.normal.z());
+
             floatBuffer.put(vertexData.texCoordinate.x());
             floatBuffer.put(vertexData.texCoordinate.y());
         }
@@ -94,20 +239,23 @@ public class TerrainColumn implements Cloneable{
         return floatBuffer;
     }
 
-    public ArrayList<VertexData> getColumnVertexData() {
-        return columnVertexData;
+    private float getHeight(float x, float z) {
+        return ((float) Noise.valueCoherentNoise3D(x, 0.f, z, GlobalGameSeed.SEED, NoiseQuality.FAST) - 0.5f) * 0.7f;
     }
 
-    public ArrayList<Integer> getColumnIndices() {
-        return columnIndices;
+    public ArrayList<VertexData> getColumnVertexData() {
+        return columnVertexData;
     }
 
     public float getOffset() {
         return offset;
     }
 
-    public void setOffset(float offset) {
+    public void resetOffset(float offset) {
         this.offset = offset;
+        this.startOffset = offset;
+        this.loops = 0;
+        generateHeights();
     }
 
     public void update(float moveOffset) {
@@ -116,21 +264,28 @@ public class TerrainColumn implements Cloneable{
         if (offset < minOffset) {
             float diff = offset - minOffset;
             offset = resetOffset + diff;
+            loops++;
+
+            generateHeights();
+            generateTerrain(height);
         }
     }
 
     public class VertexData {
         private Vector3f position;
+        private Vector3f normal;
         private Vector2f texCoordinate;
 
-        public VertexData(Vector3f position, Vector2f texCoordinate) {
+        VertexData(Vector3f position, Vector3f normal, Vector2f texCoordinate) {
             this.position = position;
+            this.normal = normal;
             this.texCoordinate = texCoordinate;
         }
 
-        public VertexData(VertexData vertexData) {
+        VertexData(VertexData vertexData) {
             this.position = vertexData.position;
             this.texCoordinate = vertexData.texCoordinate;
+            this.normal = vertexData.normal;
         }
 
         public Vector3f getPosition() {

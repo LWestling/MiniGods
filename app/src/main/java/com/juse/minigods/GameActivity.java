@@ -8,6 +8,7 @@ import android.view.MotionEvent;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.games.Games;
+import com.juse.minigods.Legality.Logger;
 import com.juse.minigods.Utils.AudioManager;
 import com.juse.minigods.game.Game;
 import com.juse.minigods.game.Highscore;
@@ -25,7 +26,6 @@ import com.juse.minigods.rendering.renderers.WaterRenderer;
 import java.util.ArrayList;
 
 public class GameActivity extends Activity {
-    private GLSurfaceView glSurfaceView;
     private Game game;
     private Highscore highscore;
     private GameRenderer gameRenderer;
@@ -38,7 +38,7 @@ public class GameActivity extends Activity {
         setupGame();
         setupGameRenderer();
 
-        glSurfaceView = new GLSurfaceView(this);
+        GLSurfaceView glSurfaceView = new GLSurfaceView(this);
         glSurfaceView.setEGLConfigChooser(true);
         glSurfaceView.setEGLContextClientVersion(3);
         glSurfaceView.setRenderer(gameRenderer);
@@ -80,10 +80,16 @@ public class GameActivity extends Activity {
     private void setupGame() {
         AudioManager audioManager = new AudioManager(this);
         audioManager.playMusic(this, AudioManager.Music.MAIN_MUSIC, true);
-        game = new Game(audioManager, highscore -> {
-            GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
-            if (account != null) {
-                Games.getLeaderboardsClient(this, account).submitScore(getString(R.string.leaderboard_id), highscore);
+        game = new Game(audioManager, (score, isHighscore) -> {
+            Bundle bundle = new Bundle();
+            bundle.putInt("score", score);
+            Logger.AnalyticsLog(this, "new_score", bundle);
+
+            if (isHighscore) {
+                GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+                if (account != null) {
+                    Games.getLeaderboardsClient(this, account).submitScore(getString(R.string.leaderboard_id), score);
+                }
             }
         });
     }

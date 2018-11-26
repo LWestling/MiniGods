@@ -33,7 +33,7 @@ public class WaterGrid {
         world = new Matrix4f().translate(position).scale(scale.x, 1.f, scale.y);
 
         vertexBuffer = ByteBuffer
-                .allocateDirect(size.x * size.y * 6 * 2 * 3 * Float.BYTES)
+                .allocateDirect(size.x * size.y * 6 * 2 * 3 * 4)
                 .order(ByteOrder.nativeOrder()).asFloatBuffer();
 
         generateWaterGrid(offset);
@@ -96,7 +96,7 @@ public class WaterGrid {
     }
 
     private float getHeight(float x, float y) {
-        return (float) Noise.valueCoherentNoise3D(x, 0.f, y, seed, NoiseQuality.BEST);
+        return (float) Noise.valueCoherentNoise3D(x, 0.f, y, seed, NoiseQuality.FAST);
     }
 
     private void addVertexData(Vector3f... vectors) {

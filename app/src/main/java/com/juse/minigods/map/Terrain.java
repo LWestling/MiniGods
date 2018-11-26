@@ -4,6 +4,7 @@ import org.joml.Vector2f;
 import org.joml.Vector2i;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -39,17 +40,20 @@ public class Terrain {
 
     private void createColumns() {
         renderColumns = new TerrainColumn[size.x()];
-        TerrainColumn renderColumn = new TerrainColumn(size.y(), 0, position.x, position.x + width);
+        TerrainColumn renderColumn = new TerrainColumn(size.y(), 0, position.x, position.x + width, getColumnWidth());
+
+        TerrainType types[] = new TerrainType[size.y()];
+        for (int i = 0; i < size.y(); i++) {
+            types[i] = Math.random() < .5f ? TerrainType.GRASS : TerrainType.WATER;
+        }
 
         for (int i = 0; i < size.x(); i++) {
-            ArrayList<TerrainType> column = new ArrayList<>();
-            for (int j = 0; j < size.y(); j++) {
-                column.add(Math.random() < .5f ? TerrainType.GRASS : TerrainType.WATER);
-            }
+            ArrayList<TerrainType> column = new ArrayList<>(Arrays.asList(types).subList(0, size.y()));
             this.columns.add(column);
 
-            renderColumn.setOffset(size.x() + i * getColumnWidth());
-            renderColumns[i] = new TerrainColumn(renderColumn);
+            renderColumn.resetOffset(position.x() + i * getColumnWidth());
+            TerrainColumn copyColumn = new TerrainColumn(renderColumn);
+            renderColumns[i] = copyColumn;
         }
     }
 
@@ -74,7 +78,7 @@ public class Terrain {
     }
 
     public float getColumnWidth() {
-        return 2.f;
+        return 4.f;
     }
 
     public float getColumnOffset(int index) {
@@ -99,7 +103,7 @@ public class Terrain {
 
     public void reset() {
         for (int i = 0; i < renderColumns.length; i++) {
-            renderColumns[i].setOffset(i * getColumnWidth() + position.x());
+            renderColumns[i].resetOffset(i * getColumnWidth() + position.x());
         }
     }
 }

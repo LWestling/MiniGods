@@ -28,6 +28,7 @@ import static android.opengl.GLES20.GL_VERTEX_SHADER;
  */
 
 public class TerrainRenderer implements RendererInterface {
+    private final static int BASE_LOCATION = 3;
     private final static String VS = "terrain/vertex", FS = "terrain/fragment";
     private final static String TEXTURE_PATH = "textures/%s.png", GRASS = "grass", SAND = "sand";
 
@@ -65,19 +66,17 @@ public class TerrainRenderer implements RendererInterface {
 
         for (int i = 0; i < columns.length; i++) {
             TerrainColumn renderColumn = renderColumns[i];
-            Integer[] integers = renderColumn.getColumnIndices().toArray(new Integer[]{});
 
             // build vertices
             MaterialBuilder materialBuilder = new MaterialBuilder();
             materialBuilder.setVertices(renderColumn.getVertexData(), renderColumn.getColumnVertexData().size(),
-                    GL_DYNAMIC_DRAW, new int[] {3, 2}, new int[] {0, 1},
-                    new int[] {Float.BYTES * 5, Float.BYTES * 5}, new int[] {0, Float.BYTES * 3});
-            materialBuilder.setIndices(DataUtils.ToBuffer(integers), integers.length, 0);
+                    GL_DYNAMIC_DRAW, new int[] {3, 3, 2}, new int[] {0, 1, 2},
+                    new int[] {FLOAT_BYTES * 8, FLOAT_BYTES * 8, FLOAT_BYTES * 8}, new int[] {0, FLOAT_BYTES * 3, FLOAT_BYTES * 6});
             materialBuilder.setImageTexture(grass);
 
             // translation uniform
             materialBuilder.setUniforms(
-                    (new int[]{3}),
+                    (new int[]{BASE_LOCATION}),
                     DataUtils.ToBuffer(new Matrix4f()
                             .translate(renderColumn.getOffset(), 0.f, 0.f)
                             .scale(terrain.getColumnWidth() + 0.005f, 1.f, 1.f))
@@ -89,7 +88,7 @@ public class TerrainRenderer implements RendererInterface {
     }
 
     public void render(ShaderManager shaderManager, MaterialManager materialManager) {
-        materialManager.render(renderPass, 2, 4, 5);
+        materialManager.render(renderPass, BASE_LOCATION + 1, BASE_LOCATION + 2, BASE_LOCATION + 3);
     }
 
     public void update(MaterialManager materialManager) {
