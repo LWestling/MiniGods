@@ -93,21 +93,21 @@ public class TerrainRenderer implements RendererInterface {
 
     public void update(MaterialManager materialManager) {
         Lock terrainUpdateLock = terrain.getTerrainUpdateLock();
-        if(terrainUpdateLock.tryLock()) {
-            try {
-                TerrainColumn[] renderColumns = terrain.getRenderColumns();
-                for (int i = 0; i < columns.length; i++) {
-                    columns[i].getUniforms().updateUniform(
-                            DataUtils.ToBuffer(new Matrix4f()
-                                    .translate(renderColumns[i].getOffset(), 0.f, 0.f)
-                                    .scale(terrain.getColumnWidth(), 1.f, 1.f)),
-                            0
-                    );
-                    columns[i].getVertices().updateData(renderColumns[i].getVertexData());
-                }
-            } finally {
-                terrainUpdateLock.unlock();
+
+        terrainUpdateLock.lock();
+        try {
+            TerrainColumn[] renderColumns = terrain.getRenderColumns();
+            for (int i = 0; i < columns.length; i++) {
+                columns[i].getUniforms().updateUniform(
+                        DataUtils.ToBuffer(new Matrix4f()
+                                .translate(renderColumns[i].getOffset(), 0.f, 0.f)
+                                .scale(terrain.getColumnWidth(), 1.f, 1.f)),
+                        0
+                );
+                columns[i].getVertices().updateData(renderColumns[i].getVertexData());
             }
+        } finally {
+            terrainUpdateLock.unlock();
         }
     }
 }

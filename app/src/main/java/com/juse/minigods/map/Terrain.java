@@ -100,8 +100,14 @@ public class Terrain {
     }
 
     public void reset() {
-        for (int i = 0; i < renderColumns.length; i++) {
-            renderColumns[i].resetOffset(i * getColumnWidth() + position.x());
+        terrainUpdateLock.lock();
+
+        try {
+            for (int i = 0; i < renderColumns.length; i++) {
+                renderColumns[i].resetOffset(i * getColumnWidth() + position.x());
+            }
+        } finally {
+            terrainUpdateLock.unlock();
         }
     }
 }

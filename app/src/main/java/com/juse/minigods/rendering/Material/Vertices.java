@@ -31,7 +31,7 @@ public class Vertices {
     public void updateData(FloatBuffer newData) {
         // no sync
         GLES31.glBindBuffer(GLES31.GL_ARRAY_BUFFER, vbo[0]);
-        GLES31.glBufferSubData(GLES31.GL_ARRAY_BUFFER, 0, vertexBuffer.capacity() * Float.BYTES, newData);
+        GLES31.glBufferSubData(GLES31.GL_ARRAY_BUFFER, 0, vertexBuffer.capacity() * 4, newData);
         GLES31.glBindBuffer(GLES31.GL_ARRAY_BUFFER, 0);
     }
 

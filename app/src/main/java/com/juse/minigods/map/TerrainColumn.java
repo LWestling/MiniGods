@@ -32,46 +32,25 @@ public class TerrainColumn implements Cloneable{
         this.columnWidth = columnWidth;
         loops = 0;
 
-        heights = new float[2][height];
+        heights = new float[2][height / 2 + 2];
         generateHeights();
         generateTerrain(height);
     }
 
     private void generateHeights() {
         for (int x = 0; x < 2; x++) {
-            float xPos = x + ((loops * (resetOffset - minOffset)) + startOffset) / columnWidth;
+            float xPos = x + (loops * (resetOffset - minOffset) + startOffset) / columnWidth;
             System.out.println(getHeight(xPos, 0) + ":" + xPos + ":" + loops);
-            for (int z = 0; z < height; z++) {
+            for (int z = 0; z < height / 2 + 2; z++) {
                 heights[x][z] = getHeight(xPos, z);
             }
         }
     }
 
-    /**
-     * Copies what needs to be
-     * @param terrainColumn column to copy values from
-     */
-    TerrainColumn(TerrainColumn terrainColumn) {
-        height = terrainColumn.height;
-
-        offset = terrainColumn.offset;
-        minOffset = terrainColumn.minOffset;
-
-        startOffset = terrainColumn.startOffset;
-        resetOffset = terrainColumn.resetOffset;
-
-        columnWidth = terrainColumn.columnWidth;
-        loops = terrainColumn.loops;
-
-        heights = new float[2][height];
-        generateHeights();
-        generateTerrain(height);
-    }
-
     private void addTriangleVertexData(int row, float endYOffset, float endZOffset,
                                        float triangleHeight, float triangleWidth,
                                        int textureTop, int textureBot) {
-        float texX = textureTop / TEXTURE_COUNT, texEndX = (textureTop + 1) / TEXTURE_COUNT;
+        float texX = startOffset - minOffset, texEndX = texX;
 
         float z = row * triangleHeight;
         float endZ = z + triangleHeight + endZOffset;
@@ -139,7 +118,8 @@ public class TerrainColumn implements Cloneable{
     private void addTriangleVertexData2(int row, float endYOffset,
                                         float triangleHeight, float triangleWidth,
                                         int textureTop, int textureBot) {
-        float texX = textureTop / TEXTURE_COUNT, texEndX = (textureTop + 1) / TEXTURE_COUNT;
+        // float texX = textureTop / TEXTURE_COUNT, texEndX = (textureTop + 1) / TEXTURE_COUNT;
+        float texX = startOffset - minOffset, texEndX = texX;
 
         float z = row * triangleHeight;
         float endZ = z + triangleHeight;
@@ -147,8 +127,8 @@ public class TerrainColumn implements Cloneable{
         Vector3f vecs[] = new Vector3f[4];
         vecs[0] = new Vector3f(0.f, heights[0][row], z);
         vecs[1] = new Vector3f(triangleWidth, heights[1][row], z);
-        vecs[2] = new Vector3f(0.f, heights[0][row + 1], endZ);
-        vecs[3] = new Vector3f(triangleWidth, heights[1][row + 1], endZ);
+        vecs[2] = new Vector3f(0.f, heights[0][row + 1] + endYOffset, endZ);
+        vecs[3] = new Vector3f(triangleWidth, heights[1][row + 1] + endYOffset, endZ);
 
         // ugh
         Vector3f normalTop = new Vector3f(vecs[0]).sub(vecs[2]).cross(new Vector3f(vecs[0]).sub(vecs[3])).normalize();
@@ -209,10 +189,10 @@ public class TerrainColumn implements Cloneable{
         float triangleHeight = 2.f;
 
         for (int row = 0; row < height / 2; row++) {
-            if (Math.random() < 0.5f)
-                addTriangleVertexData2(row, 0.f, triangleHeight, 1.f,
-                        (int) (Math.random() * TEXTURE_COUNT), (int) (Math.random() * TEXTURE_COUNT));
-            else
+          //  if (Math.random() < 0.5f)
+           //     addTriangleVertexData2(row, 0.f, triangleHeight, 1.f,
+            //            (int) (Math.random() * TEXTURE_COUNT), (int) (Math.random() * TEXTURE_COUNT));
+            // else
                 addTriangleVertexData(row, 0.f, 0.f, triangleHeight, 1.f,
                         (int) (Math.random() * TEXTURE_COUNT), (int) (Math.random() * TEXTURE_COUNT));
         }
@@ -247,7 +227,7 @@ public class TerrainColumn implements Cloneable{
     }
 
     private float getHeight(float x, float z) {
-        return ((float) Noise.valueCoherentNoise3D(x, 0.f, z, GlobalGameSeed.SEED, NoiseQuality.FAST) - 0.5f) * 0.4f;
+        return ((float) Noise.valueCoherentNoise3D(x, 0.f, z, GlobalGameSeed.SEED, NoiseQuality.FAST) - .5f) * .4f;
     }
 
     public ArrayList<VertexData> getColumnVertexData() {
@@ -262,7 +242,9 @@ public class TerrainColumn implements Cloneable{
         this.offset = offset;
         this.startOffset = offset;
         this.loops = 0;
+
         generateHeights();
+        generateTerrain(height);
     }
 
     public void update(float moveOffset) {
