@@ -40,7 +40,6 @@ public class Terrain {
 
     private void createColumns() {
         renderColumns = new TerrainColumn[size.x()];
-        TerrainColumn renderColumn = new TerrainColumn(size.y(), 0, position.x, position.x + width, getColumnWidth());
 
         TerrainType types[] = new TerrainType[size.y()];
         for (int i = 0; i < size.y(); i++) {
@@ -51,9 +50,8 @@ public class Terrain {
             ArrayList<TerrainType> column = new ArrayList<>(Arrays.asList(types).subList(0, size.y()));
             this.columns.add(column);
 
-            renderColumn.resetOffset(position.x() + i * getColumnWidth());
-            TerrainColumn copyColumn = new TerrainColumn(renderColumn);
-            renderColumns[i] = copyColumn;
+            renderColumns[i] = new TerrainColumn(size.y(), position.x() + i * getColumnWidth(),
+                    position.x, position.x + width, getColumnWidth());
         }
     }
 

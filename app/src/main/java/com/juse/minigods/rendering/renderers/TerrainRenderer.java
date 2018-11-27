@@ -103,6 +103,7 @@ public class TerrainRenderer implements RendererInterface {
                                     .scale(terrain.getColumnWidth(), 1.f, 1.f)),
                             0
                     );
+                    columns[i].getVertices().updateData(renderColumns[i].getVertexData());
                 }
             } finally {
                 terrainUpdateLock.unlock();

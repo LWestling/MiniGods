@@ -22,10 +22,13 @@ public class TerrainColumn implements Cloneable{
 
     TerrainColumn(int height, float startOffset, float minOffset, float resetOffset, float columnWidth) {
         this.height = height;
+
         this.offset = startOffset;
-        this.startOffset = startOffset;
         this.minOffset = minOffset;
+
+        this.startOffset = startOffset;
         this.resetOffset = resetOffset;
+
         this.columnWidth = columnWidth;
         loops = 0;
 
@@ -36,7 +39,8 @@ public class TerrainColumn implements Cloneable{
 
     private void generateHeights() {
         for (int x = 0; x < 2; x++) {
-            float xPos = x * columnWidth + (loops * (resetOffset - minOffset)) + startOffset;
+            float xPos = x + ((loops * (resetOffset - minOffset)) + startOffset) / columnWidth;
+            System.out.println(getHeight(xPos, 0) + ":" + xPos + ":" + loops);
             for (int z = 0; z < height; z++) {
                 heights[x][z] = getHeight(xPos, z);
             }
@@ -48,13 +52,16 @@ public class TerrainColumn implements Cloneable{
      * @param terrainColumn column to copy values from
      */
     TerrainColumn(TerrainColumn terrainColumn) {
-        offset = terrainColumn.offset;
-        startOffset = terrainColumn.startOffset;
-        minOffset = terrainColumn.minOffset;
-        resetOffset = terrainColumn.resetOffset;
         height = terrainColumn.height;
-        loops = terrainColumn.loops;
+
+        offset = terrainColumn.offset;
+        minOffset = terrainColumn.minOffset;
+
+        startOffset = terrainColumn.startOffset;
+        resetOffset = terrainColumn.resetOffset;
+
         columnWidth = terrainColumn.columnWidth;
+        loops = terrainColumn.loops;
 
         heights = new float[2][height];
         generateHeights();
@@ -240,7 +247,7 @@ public class TerrainColumn implements Cloneable{
     }
 
     private float getHeight(float x, float z) {
-        return ((float) Noise.valueCoherentNoise3D(x, 0.f, z, GlobalGameSeed.SEED, NoiseQuality.FAST) - 0.5f) * 0.7f;
+        return ((float) Noise.valueCoherentNoise3D(x, 0.f, z, GlobalGameSeed.SEED, NoiseQuality.FAST) - 0.5f) * 0.4f;
     }
 
     public ArrayList<VertexData> getColumnVertexData() {
