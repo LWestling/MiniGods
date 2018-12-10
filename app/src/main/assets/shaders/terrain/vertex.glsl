@@ -12,9 +12,9 @@ out vec4 color;
 out vec2 texCoord;
 
 vec4 calcLight(vec3 pos) {
-    vec3 lightColor = vec3(255.f / 255.f, 114.f / 255.f, 81.f / 255.f);
+    vec3 lightColor = vec3(240.f / 255.f, 240.f / 255.f, 250.f / 255.f);
     vec3 moonColor = vec3(129.f / 255.f, 159.f / 255.f, 1.f);
-    float lightPower = 600.f, moonPower = 800.f;
+    float lightPower = 450.f, moonPower = 800.f;
 
     vec3 posToLight = light.xyz - pos;
     vec3 posToLightNor = normalize(posToLight);
@@ -26,10 +26,10 @@ vec4 calcLight(vec3 pos) {
 
     float lightFromSun = max(lightPower / (distanceToLight * distanceToLight), 0.1f);
 
-    float ambient = 0.01f;
-    float diffuse = max((dot(posToLightNor, inNormal)), 0.1f) * lightFromSun;
+    float ambient = 0.1f;
+    float diffuse = max((dot(posToLightNor, inNormal)), 0.4f) * lightFromSun;
     float moonDiffuse = max((dot(-posToLightNor, inNormal)), 0.12f) * 0.65f;
-    float specular = pow(max(dot(lightReflection, toCamera), 0.f), lightPower) * 0.1f;
+    float specular = pow(max(dot(lightReflection, toCamera), 0.f), lightPower) * 0.01f;
 
     return vec4(lightColor * (diffuse + ambient) + moonColor * moonDiffuse, 1.f);
 }

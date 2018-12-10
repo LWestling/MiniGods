@@ -1,6 +1,9 @@
 package com.juse.minigods;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.graphics.BitmapFactory;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.view.MotionEvent;
@@ -14,15 +17,17 @@ import com.juse.minigods.game.Game;
 import com.juse.minigods.game.Highscore;
 import com.juse.minigods.map.Map;
 import com.juse.minigods.rendering.Font.Font;
-import com.juse.minigods.rendering.Font.TextCache;
 import com.juse.minigods.rendering.GameRenderer;
+import com.juse.minigods.rendering.Sprite.Sprites;
 import com.juse.minigods.rendering.renderers.FontRenderer;
 import com.juse.minigods.rendering.renderers.ObstacleRenderer;
 import com.juse.minigods.rendering.renderers.PlayerRenderer;
 import com.juse.minigods.rendering.renderers.RendererInterface;
+import com.juse.minigods.rendering.renderers.SpriteRenderer;
 import com.juse.minigods.rendering.renderers.TerrainRenderer;
 import com.juse.minigods.rendering.renderers.WaterRenderer;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class GameActivity extends Activity {
@@ -30,6 +35,7 @@ public class GameActivity extends Activity {
     private Highscore highscore;
     private GameRenderer gameRenderer;
     private FontRenderer fontRenderer;
+    private SpriteRenderer spriteRenderer;
     private boolean running;
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,13 +53,19 @@ public class GameActivity extends Activity {
 
         highscore = new Highscore();
         running = true;
+
+        SharedPreferences sharedPreferences = getSharedPreferences("general", Context.MODE_PRIVATE);
+        boolean firstTime = sharedPreferences.getBoolean("first_time", true);
+
         new Thread(() -> {
-            TextCache cache = fontRenderer.getTextCache();
             game.setHighscore(highscore.getHighscore(getApplicationContext()));
-            game.startGameSession(cache);
+            game.setRenderCaches(fontRenderer.getTextCache(), spriteRenderer.getSpriteCache());
+            game.showTutorial(firstTime);
+
+            sharedPreferences.edit().putBoolean("first_time", false).apply();
 
             while (running) {
-                game.update(cache);
+                game.update();
                 try {
                     Thread.sleep(50);
                 } catch (Exception e) {
@@ -108,6 +120,15 @@ public class GameActivity extends Activity {
         rendererList.add(new WaterRenderer(map.getWaterGrids()));
         rendererList.add(new PlayerRenderer(this, game.getPlayer()));
 
+        try {
+            spriteRenderer = new SpriteRenderer(
+                    new Sprites(BitmapFactory.decodeStream(getAssets().open("textures/icons.png")), 19, 28)
+            );
+            rendererList.add(spriteRenderer);
+        } catch (IOException e) {
+            Logger.CrashlyticsLog(e);
+        }
+
         fontRenderer = new FontRenderer(new Font("bitFont", "bitFont", getAssets()));
         rendererList.add(fontRenderer);
 
@@ -125,12 +146,12 @@ public class GameActivity extends Activity {
 
         switch (e.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                game.pressDown(x, y);
+                game.pressDown();
                 break;
             case MotionEvent.ACTION_MOVE:
                 break;
             case MotionEvent.ACTION_UP:
-                game.pressUp(x, y);
+                game.pressUp();
                 break;
         }
 

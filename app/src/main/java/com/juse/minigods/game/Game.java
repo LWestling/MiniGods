@@ -5,6 +5,7 @@ import com.juse.minigods.map.Map;
 import com.juse.minigods.map.Terrain;
 import com.juse.minigods.rendering.CameraProjectionManager;
 import com.juse.minigods.rendering.Font.TextCache;
+import com.juse.minigods.rendering.Sprite.SpriteCache;
 
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
@@ -19,11 +20,13 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * Created by LukasW on 2018-03-22.
  * The game container that contains all game components, like terrain and player
  * and manipulates those components.
+ *
+ * This is just a mess, please ignore.
  */
 
 public class Game {
-    private static final float SCORE_POWER = 1.8f, SPEED_POWER = 1.02f,
-        SCORE_MUL = 0.0075f, SCORE_START = 0.8f, SPEED_MUL = 0.011f, SPEED_START = 7.f,
+    private static final float SCORE_POWER = 1.4f, SPEED_POWER = 1.02f,
+        SCORE_MUL = 0.075f, SCORE_START = 0.8f, SPEED_MUL = 0.011f, SPEED_START = 7.f,
         PLAYER_START_SPEED = 12.5f, PLAYER_BASE_FALL_MUL = 0.42f, TREE_TIMER = 0.55f; // change with difficulty or something?
     private static final int ROWS = 14, COLUMNS = 9;
 
@@ -54,7 +57,7 @@ public class Game {
     private static Quaternionf universalLightRotation;
     private static CameraProjectionManager cameraProjectionManager; // THIS IS FOR TESTING; MOVE CAMERA TO LOGIC, OR JUST MAKE IT A CONSTANT
 
-    private boolean gameOver, startNewGameSession;
+    private boolean gameOver, startNewGameSession, showingTutorial;
     private int highscore;
 
     private ScoreListener scoreListener;
@@ -77,10 +80,17 @@ public class Game {
         cameraProjectionManager.updateCamera(CAMERA_START_POS, CAMERA_START_DIR.normalize());
 
         obstacles = new ConcurrentLinkedQueue<>();
+
+        universalLightPosition = new Vector4f(5.f, 25.f, 0.f, 1.f);
+        universalLightRotation = new Quaternionf();
+    }
+
+    public void setRenderCaches(TextCache textCache, SpriteCache spriteCache) {
+        uiManager.setCaches(textCache, spriteCache);
     }
 
     // This starts a new game session, reset player and such
-    public void startGameSession(TextCache cache) {
+    public void startGameSession() {
         universalLightPosition = new Vector4f(5.f, 25.f, 0.f, 1.f);
         universalLightRotation = new Quaternionf();
 
@@ -88,7 +98,7 @@ public class Game {
         player.setPosition(new Vector3f(START_POS));
         player.setVelocity(new Vector3f(0.f, 0.f, 0.f));
 
-        uiManager.setOverlayIngame(cache, highscore);
+        uiManager.setOverlayIngame(highscore);
 
         obstacles.clear();
         map.reset();
@@ -107,30 +117,30 @@ public class Game {
         pauseTimer.resetTimer();
     }
 
-    public void update(TextCache cache) {
-        uiManager.update(cache);
+    public void update() {
+        float dt = gameTimer.calcDeltaTime();
+        uiManager.update(dt);
 
         if (player.isOutOfBounds()) {
             player.setVelocity(new Vector3f(0.f, -1.f, player.getPosition().z > 0 ? 1 : -1));
             player.update(0.35f);
         }
 
-        if (isGamePaused()) {
+        if (isGamePaused() || showingTutorial) {
             return;
         }
 
         if (isGameOver()) {
-            // to make him fall down
             if (startNewGameSession) {
-                uiManager.hideOverlayGameover(cache);
-                startGameSession(cache);
+                uiManager.hideOverlayGameover();
+                startGameSession();
             }
         } else {
-            playingUpdate();
+            playingUpdate(dt);
 
             if (isGameOver()) {
-                uiManager.hideOverlayIngame(cache);
-                uiManager.setOverlayGameover(cache, highscore);
+                uiManager.hideOverlayIngame();
+                uiManager.setOverlayGameover(highscore);
                 pauseGame(0.75f);
 
                 if (score > highscore) {
@@ -143,8 +153,7 @@ public class Game {
         }
     }
 
-    private void playingUpdate() {
-        float dt = gameTimer.calcDeltaTime();
+    private void playingUpdate(float dt) {
         universalLightRotation.rotate(dt * .05f, 0.f, 0.f);
 
         updateGame(dt);
@@ -223,17 +232,21 @@ public class Game {
         return new Vector4f(universalLightPosition).rotate(universalLightRotation);
     }
 
-    public boolean isGameOver() {
+    private boolean isGameOver() {
         return gameOver;
     }
 
-    public float getScore() {
+    private float getScore() {
         return score;
     }
 
-    public void pressDown(float x, float y) {
+    public void pressDown() {
         if (!isGamePaused()) {
-            if (isGameOver()) {
+            if (showingTutorial) {
+                showingTutorial = false;
+                uiManager.hideTutorialUI();
+                startGameSession();
+            } else if (isGameOver()) {
                 startNewGameSession = true;
             } else {
                 player.setVelocity(new Vector3f(0.f, 0.f, -playerSpeed));
@@ -245,7 +258,7 @@ public class Game {
         return pauseTime != 0 && pauseTimer.calcTimeSinceReset() < pauseTime;
     }
 
-    public void pressUp(float x, float y) {
+    public void pressUp() {
         player.setVelocity(new Vector3f(0.f, 0.f, playerSpeed * playerFallMultiplier));
     }
 
@@ -259,6 +272,12 @@ public class Game {
 
     public void stop() {
         audioManager.delete();
+    }
+
+    public void showTutorial(boolean firstTime) {
+        showingTutorial = true;
+        uiManager.setOverlayTutorial();
+        pauseGame(firstTime ? 6.f : 1.5f);
     }
 
     public interface ScoreListener {

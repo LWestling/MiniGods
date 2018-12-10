@@ -22,8 +22,8 @@ vec4 calcLight(vec4 color) {
     vec3 toCamera = normalize(camera.xyz - pos);
     vec3 lightReflection = reflect(-posToLightNor, outNormal);
 
-    float ambient = 0.6f;
-    float diffuse = max((dot(posToLightNor, outNormal)), 0.f) * max(lightPower / (distanceToLight * distanceToLight), 0.f);
+    float ambient = 0.01f;
+    float diffuse = max((dot(posToLightNor, outNormal)), 0.1f) * max(lightPower / (distanceToLight * distanceToLight), 0.f);
     float moonDiffuse = max((dot(vec3(0.f, 1.f, 0.f), outNormal)), 0.12f) * 0.65f;
 
     return vec4(lightColor * color.rgb * (ambient + diffuse) + moonColor * moonDiffuse, color.a);

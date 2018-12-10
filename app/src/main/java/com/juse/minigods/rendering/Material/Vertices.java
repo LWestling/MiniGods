@@ -40,7 +40,7 @@ public class Vertices {
 
         GLES31.glGenBuffers(vbo.length, vbo, 0);
         GLES31.glBindBuffer(GLES31.GL_ARRAY_BUFFER, vbo[0]);
-        GLES31.glBufferData(GLES31.GL_ARRAY_BUFFER, vertexBuffer.capacity() * Float.BYTES, vertexBuffer, drawFlag);
+        GLES31.glBufferData(GLES31.GL_ARRAY_BUFFER, vertexBuffer.capacity() * 4, vertexBuffer, drawFlag);
 
         createVAO();
     }

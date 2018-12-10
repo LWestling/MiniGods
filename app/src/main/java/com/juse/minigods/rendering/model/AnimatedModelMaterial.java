@@ -22,7 +22,7 @@ import static android.opengl.GLES20.GL_STATIC_DRAW;
  * Helper class to create animatedModelMaterial
  */
 public class AnimatedModelMaterial {
-    private final static int VERTEX_FLOATS = 8;
+    private final static int VERTEX_FLOATS = 8, FLOAT_BYTES = 4, INTEGER_BYTES = 4;
 
     private Material material;
     private Model model;
@@ -48,7 +48,7 @@ public class AnimatedModelMaterial {
     public void buildMaterial(int renderPass, AssetManager assetManager, MaterialBuilder builder, AnimatedShaderInfo info) {
         // vec3, vec3, vec2, ivec4, vec4
         ByteBuffer byteBuffer = ByteBuffer
-                .allocateDirect(getVertexCount() * (Float.BYTES * 8 + Integer.BYTES * 4 + Float.BYTES * 4))
+                .allocateDirect(getVertexCount() * (FLOAT_BYTES * 8 + INTEGER_BYTES * 4 + FLOAT_BYTES * 4))
                 .order(ByteOrder.nativeOrder());
         for (int vertex = 0; vertex < getVertexCount(); vertex++) {
             for (int comp = 0; comp < VERTEX_FLOATS; comp++) {
@@ -113,16 +113,16 @@ public class AnimatedModelMaterial {
         GLES31.glVertexAttribPointer(info.vertexLoc, 3, GLES31.GL_FLOAT, false, stride, 0);
 
         GLES31.glEnableVertexAttribArray(info.normalLoc); // uses currently bound vao
-        GLES31.glVertexAttribPointer(info.normalLoc, 3, GLES31.GL_FLOAT, false, stride, Float.BYTES * 3);
+        GLES31.glVertexAttribPointer(info.normalLoc, 3, GLES31.GL_FLOAT, false, stride, FLOAT_BYTES * 3);
 
         GLES31.glEnableVertexAttribArray(info.uvLoc); // uses currently bound vao
-        GLES31.glVertexAttribPointer(info.uvLoc, 2, GLES31.GL_FLOAT, false, stride, Float.BYTES * 6);
+        GLES31.glVertexAttribPointer(info.uvLoc, 2, GLES31.GL_FLOAT, false, stride, FLOAT_BYTES * 6);
 
         GLES31.glEnableVertexAttribArray(info.boneIdLocation); // uses currently bound vao
-        GLES31.glVertexAttribIPointer(info.boneIdLocation, 4, GLES31.GL_INT, stride, Float.BYTES * 8);
+        GLES31.glVertexAttribIPointer(info.boneIdLocation, 4, GLES31.GL_INT, stride, FLOAT_BYTES * 8);
 
         GLES31.glEnableVertexAttribArray(info.boneWeightLocation); // uses currently bound vao
-        GLES31.glVertexAttribPointer(info.boneWeightLocation, 4, GLES31.GL_FLOAT, false, stride, Float.BYTES * 8 + Integer.BYTES * 4);
+        GLES31.glVertexAttribPointer(info.boneWeightLocation, 4, GLES31.GL_FLOAT, false, stride, FLOAT_BYTES * 8 + INTEGER_BYTES * 4);
     }
 
     public void setAnimation(String animation) {

@@ -40,7 +40,6 @@ public class TerrainColumn implements Cloneable{
     private void generateHeights() {
         for (int x = 0; x < 2; x++) {
             float xPos = x + (loops * (resetOffset - minOffset) + startOffset) / columnWidth;
-            System.out.println(getHeight(xPos, 0) + ":" + xPos + ":" + loops);
             for (int z = 0; z < height / 2 + 2; z++) {
                 heights[x][z] = getHeight(xPos, z);
             }
@@ -50,7 +49,7 @@ public class TerrainColumn implements Cloneable{
     private void addTriangleVertexData(int row, float endYOffset, float endZOffset,
                                        float triangleHeight, float triangleWidth,
                                        int textureTop, int textureBot) {
-        float texX = startOffset - minOffset, texEndX = texX;
+        float texX = textureTop / TEXTURE_COUNT, texEndX = (textureTop + 1) / TEXTURE_COUNT;
 
         float z = row * triangleHeight;
         float endZ = z + triangleHeight + endZOffset;
@@ -227,7 +226,7 @@ public class TerrainColumn implements Cloneable{
     }
 
     private float getHeight(float x, float z) {
-        return ((float) Noise.valueCoherentNoise3D(x, 0.f, z, GlobalGameSeed.SEED, NoiseQuality.FAST) - .5f) * .4f;
+        return ((float) Noise.valueCoherentNoise3D(x, 0.f, z, GlobalGameSeed.SEED, NoiseQuality.FAST) - .5f) * .6f;
     }
 
     public ArrayList<VertexData> getColumnVertexData() {

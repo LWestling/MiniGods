@@ -39,6 +39,11 @@ public class Material {
         }
     } */
 
+    public void replaceVertices(Vertices vertices) {
+        if (this.vertices != null) this.vertices.deleteData();
+        this.vertices = vertices;
+    }
+
     public int getRenderPass() {
         return renderPass;
     }

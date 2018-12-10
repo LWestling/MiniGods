@@ -17,10 +17,11 @@ import java.util.ArrayList;
  */
 
 public class DataUtils {
+    private final static int FLOAT_BYTES = 4, INTEGER_BYTES = 4;
     private final static int VECTOR_SIZE = 3;
 
     public static FloatBuffer ToBuffer(Vector3f arr[]) {
-        FloatBuffer buffer = ByteBuffer.allocateDirect(arr.length * Float.BYTES * VECTOR_SIZE)
+        FloatBuffer buffer = ByteBuffer.allocateDirect(arr.length * FLOAT_BYTES * VECTOR_SIZE)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
 
@@ -34,7 +35,7 @@ public class DataUtils {
     }
 
     public static FloatBuffer ToBuffer(float arr[]) {
-        FloatBuffer buffer = ByteBuffer.allocateDirect(arr.length * Float.BYTES)
+        FloatBuffer buffer = ByteBuffer.allocateDirect(arr.length * FLOAT_BYTES)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
 
@@ -45,7 +46,7 @@ public class DataUtils {
     }
 
     public static FloatBuffer ToBuffer(ArrayList<Float> floats) {
-        FloatBuffer buffer = ByteBuffer.allocateDirect(floats.size() * Float.BYTES)
+        FloatBuffer buffer = ByteBuffer.allocateDirect(floats.size() * FLOAT_BYTES)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
 
@@ -58,7 +59,7 @@ public class DataUtils {
     }
 
     public static IntBuffer ToBuffer(int arr[]) {
-        IntBuffer buffer = ByteBuffer.allocateDirect(arr.length * Integer.BYTES)
+        IntBuffer buffer = ByteBuffer.allocateDirect(arr.length * INTEGER_BYTES)
                 .order(ByteOrder.nativeOrder())
                 .asIntBuffer();
 
@@ -79,7 +80,7 @@ public class DataUtils {
     }
 
     public static FloatBuffer ToBuffer(Matrix4f mat) {
-        FloatBuffer buffer = ByteBuffer.allocateDirect(16 * Float.BYTES) // 4x4 matrix
+        FloatBuffer buffer = ByteBuffer.allocateDirect(16 * FLOAT_BYTES) // 4x4 matrix
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
 
@@ -90,7 +91,7 @@ public class DataUtils {
 
     public static IntBuffer newIntBuffer(int cap) {
         return ByteBuffer.
-                allocateDirect(cap * Integer.BYTES).
+                allocateDirect(cap * INTEGER_BYTES).
                 order(ByteOrder.nativeOrder()).
                 asIntBuffer();
     }
@@ -102,7 +103,7 @@ public class DataUtils {
     }
 
     public static FloatBuffer ToBuffer(Matrix4f[] mats) {
-        FloatBuffer buffer = ByteBuffer.allocateDirect(16 * mats.length * Float.BYTES) // 4x4 matrix
+        FloatBuffer buffer = ByteBuffer.allocateDirect(16 * mats.length * FLOAT_BYTES) // 4x4 matrix
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
 

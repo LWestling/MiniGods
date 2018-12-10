@@ -74,51 +74,57 @@ public class Font {
 
         String lineType = split[0];
 
-        if (lineType.equals(CHAR_OFFSET)) {
-            offset = getValue(split[1]);
-        } else if (lineType.equals(CELL)) {
-            // todo refactor
-            String split2[] = split[1].split(",");
-            switch (split2[0]) {
-                case WIDTH:
-                    cellDimension.x = toInt(split2[1]);
-                    break;
-                case HEIGHT:
-                    cellDimension.y = toInt(split2[1]);
-                    break;
+        switch (lineType) {
+            case CHAR_OFFSET:
+                offset = getValue(split[1]);
+                break;
+            case CELL: {
+                // todo refactor
+                String split2[] = split[1].split(",");
+                switch (split2[0]) {
+                    case WIDTH:
+                        cellDimension.x = toInt(split2[1]);
+                        break;
+                    case HEIGHT:
+                        cellDimension.y = toInt(split2[1]);
+                        break;
+                }
+                break;
             }
-        } else if (lineType.equals(IMAGE)) {
-            // todo refactor
-            String split2[] = split[1].split(",");
-            switch (split2[0]) {
-                case WIDTH:
-                    imageDimension.x = toInt(split2[1]);
-                    break;
-                case HEIGHT:
-                    imageDimension.y = toInt(split2[1]);
-                    break;
+            case IMAGE: {
+                String split2[] = split[1].split(",");
+                switch (split2[0]) {
+                    case WIDTH:
+                        imageDimension.x = toInt(split2[1]);
+                        break;
+                    case HEIGHT:
+                        imageDimension.y = toInt(split2[1]);
+                        break;
+                }
+                break;
             }
-        } else if (lineType.equals(CHARACTER)) {
-            Character character;
-            if((character = characters.get(toInt(split[1]), null)) == null) {
-                character = new Character();
-                characters.put(toInt(split[1]), character);
-            }
+            case CHARACTER:
+                Character character;
+                if ((character = characters.get(toInt(split[1]), null)) == null) {
+                    character = new Character();
+                    characters.put(toInt(split[1]), character);
+                }
 
-            switch (split[2]) {
-                case BASE:
-                    character.setBaseWidth(getValue(split[3]));
-                    break;
-                case X_POSITION:
-                    character.setXOffset(getValue(split[3]));
-                    break;
-                case Y_POSITION:
-                    character.setYOffset(getValue(split[3]));
-                    break;
-                case WIDTH:
-                    character.setWidthOffset(getValue(split[3]));
-                    break;
-            }
+                switch (split[2]) {
+                    case BASE:
+                        character.setBaseWidth(getValue(split[3]));
+                        break;
+                    case X_POSITION:
+                        character.setXOffset(getValue(split[3]));
+                        break;
+                    case Y_POSITION:
+                        character.setYOffset(getValue(split[3]));
+                        break;
+                    case WIDTH:
+                        character.setWidthOffset(getValue(split[3]));
+                        break;
+                }
+                break;
         }
     }
 

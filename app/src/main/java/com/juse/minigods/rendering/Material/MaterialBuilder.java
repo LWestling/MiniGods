@@ -48,4 +48,9 @@ public class MaterialBuilder {
     public ImageTexture getImageTexture() {
         return imageTexture;
     }
+
+    public static Vertices BuildVertices(FloatBuffer vertexBuffer, int vertexCount, int drawFlag,
+                            int attributeSize[], int vertexLocations[], int strides[], int offsets[]) {
+        return new Vertices(vertexBuffer, vertexCount, drawFlag, attributeSize, vertexLocations, strides, offsets);
+    }
 }

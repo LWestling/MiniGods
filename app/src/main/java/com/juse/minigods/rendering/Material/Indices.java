@@ -23,7 +23,7 @@ public class Indices {
 
         GLES31.glGenBuffers(glBuffer.length, glBuffer, 0);
         GLES31.glBindBuffer(GLES31.GL_ELEMENT_ARRAY_BUFFER, glBuffer[0]);
-        GLES31.glBufferData(GLES31.GL_ELEMENT_ARRAY_BUFFER, size * Integer.BYTES, intBuffer, GLES20.GL_STATIC_DRAW);
+        GLES31.glBufferData(GLES31.GL_ELEMENT_ARRAY_BUFFER, size * 4, intBuffer, GLES20.GL_STATIC_DRAW);
     }
 
     public int getOffset() {
